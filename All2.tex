@@ -1,111 +1,32 @@
-\documentclass{llncs}
-%\interfootnotelinepenalty=10000
-%\usepackage[USenglish]{babel} %francais, polish, spanish, ...
-%\usepackage[T1]{fontenc}
-%\usepackage{color}
-%\usepackage{mathtools}
-%\usepackage{subfig}
-%\usepackage{multirow, booktabs}
-%\usepackage{hyperref}
+\documentclass[citeauthoryear]{llncs}
+\usepackage{mathtools}
+\usepackage{multirow, booktabs}
+\usepackage{algorithm}
+\usepackage[noend]{algpseudocode}
+\usepackage{graphicx} 
+\usepackage{amsmath}
+\usepackage{amsfonts}
 
-%\usepackage{lmodern} %Type1-font for non-english texts and characters
-%\usepackage{algorithm}
-%\usepackage[noend]{algpseudocode}
-%\usepackage{mnsymbol}
-
-%% Packages for Graphics & Figures %%%%%%%%%%%%%%%%%%%%%%%%%%
-%\usepackage{graphicx} %%For loading graphic files
-%\usepackage{amsmath}
-%\usepackage{amsthm} 
-%\usepackage{thmtools}
-%\usepackage{amsfonts}
-%\usepackage[all,cmtip]{xy}
-%\usepackage{tikz}
-
-%\newcommand{\sign}{\mathit{sgn}}
-%\newcommand{\coef}{\mathit{co}}
-%\newcommand{\var}{\mathit{var}}
-%\newcommand{\VAR}{\mathit{VAR}}
-%\newcommand{\eqs}{\mathit{eqs}}
-%\newcommand{\feas}{\mathit{feas}}
-%\newcommand{\UB}{\mathit{UB}}
-%\newcommand{\UBc}{\mathit{UBineq}}
-%\newcommand{\lb}{\mathit{lb}}
-%\newcommand{\lbc}{\mathit{lbineq}}
-%\newcommand{\FMcomb}{\mathit{FM}}
-%\newcommand{\Gcomb}{\mathit{GA}}
-%\newcommand{\proj}{\mathit{proj}}
-%\newcommand{\Pos}{\mathit{Pos}}
-%\newcommand{\Neg}{\mathit{Neg}}
-%\newcommand{\rhs}{\mathit{rhs}}
-%\newcommand{\bounds}{\mathit{bounds}}
-%\newcommand{\ie}{\mathcal{IE}}
-%\newcommand{\xx}{\mathcal{X}}
-%\newcommand{\vea}{\mathbf{co}}
-%\newcommand{\ttt}{\texttt{t}}
-%\newcommand{\trt}[1]{\texttt{#1}}
-%\newcommand{\mi}{\mathit}
-%
-%\newcommand{\false}{\texttt{false}}
-%\newcommand{\true}{\texttt{true}}
-%\newcommand{\nul}{\texttt{null}}
-%\newcommand{\ve}{\mathbf}
-%\newcommand{\lig}[4]{\ve{#1}\cdot\ve{#2}#3#4}
-%\newcommand\red[1]{\textcolor{red}{#1}}
-%\newcommand\blue[1]{\textcolor{blue}{#1}}
-%\newcommand{\set}[2]{\{\;{#1}\;|\;{#2}\;\}}
-%\newcommand{\odef}{\overset{\text{def.}}=}
-%\newcommand{\mc}{\mathcal}
-%\algdef{SE}[DOWHILE]{Do}{doWhile}{\algorithmicdo}[1]{\algorithmicwhile\ #1}%
-%\newcommand{\argmin}{\operatornamewithlimits{argmin}}
-%\newcommand{\StateInd}{\State\hspace{\algorithmicindent}}
-%\newcommand{\pr}{\mathit{PR}}
-%\newcommand{\prs}{\mathit{PRS}}
-%\newcommand{\ens}{\Leftrightarrow}
-%
-%\algdef{SE}[DOPAR]{DoPar}{doParUntil}{\algorithmicdo\textbf{ in parallel for\ }}[1]{\algorithmicuntil\ #1}%
-%
-%\algdef{SE}[SUBALG]{Indent}{EndIndent}{}{\algorithmicend\ }%
-%\algtext*{Indent}
-%\algtext*{EndIndent}
-%
-%\newtheorem{prop}{Proposition}
-%\newtheorem{lemma}{Lemma}
-%\newtheorem{cor}{Corollary}
-%
-%\newcounter{para}
-%\newcommand\mypara[1]{\newline\par\refstepcounter{para}\textbf{\thepara}\space \textbf{#1} \space}
-%\newcommand{\Sec}{F}
-%\newcommand{\Ca}{\mi{Cap}}
-%\newcommand{\Vol}{\mi{V}}
-%\newcommand{\Weight}{\mi{W}}
-%\newcommand{\weight}{\mi{w}}
-%\newcommand{\BonjeanStations}{\mi{BS}}
-%\newcommand{\bonjean}{bf}
-%\newcommand{\Bonj}{B}
-%\newcommand{\shear}{\mi{sf}}
-%\newcommand{\Prop}{P}
-%
-%\theoremstyle{definition}
-%\newtheorem*{theorem}{Theorem}
-%
-%\theoremstyle{definition}
-%\newtheorem{examplex}{Example}[section]
-%\newenvironment{example}
-%  {\pushQED{\qed}\renewcommand{\qedsymbol}{$\triangle$}\examplex}
-%  {\popQED\endexamplex}
-%	
-%\usepackage{longtable}
-%\newcounter{counterName}
-%\allowdisplaybreaks
+\newcommand{\var}{\mathit{var}}
+\newcommand{\VAR}{\mathit{VAR}}
+\newcommand{\Pos}{\mathit{Pos}}
+\newcommand{\Neg}{\mathit{Neg}}
+\newcommand{\trt}[1]{\texttt{#1}}
+\newcommand{\mi}{\mathit}
+\newcommand{\ve}{\mathbf}
+\newcommand{\set}[2]{\{\;{#1}\;|\;{#2}\;\}}
+\usepackage{longtable}
+\newcounter{counterName}
+\allowdisplaybreaks
 
 \begin{document}
 
 \title{A Decomposed Fourier-Motzkin Elimination Framework to Derive Capacity Models of Container Vessels}
-\author{Mai L. Ajspur, Rune M. Jensen, and Kent H. Andersen}
-  
+\titlerunning{FME for Deriving Capacity Models}
+\author{Mai L. Ajspur\inst{1} \and Rune M. Jensen\inst{1} \and and Kent H. Andersen\inst{2}}
+\institute{The IT University of Copenhagen \and Aarhus University}
+
 \maketitle
-\end{document}
 
 \begin{abstract}
 Accurate capacity models expressing the trade-off between different container types that can be stowed
@@ -117,8 +38,8 @@ elimination that automatically derives Vessel Capacity Models (VCMs) from VSMs b
 variables. Our results show that the projected VCMs are reduced by an order of magnitude both in number of
 inequalities and number of non-zero entries and can be solved up to 20-35 times faster than their corresponding VSMs with only a negligible loss in accuracy. 
 Our framework is applicable to LP models in general, but are particularly effective on block-angular structured problems such as VSMs. We show similar results for a multi-commodity flow problem.
+\keywords{Fourier-Motzkin Elimination \and Capacity Model \and Liner Shipping \and Projection}
 \end{abstract}
-
 
 \section{Introduction}
 Container shipping is a central element in the clockwork of global trade \cite{EC13}. A container liner shipping company operates a set of container vessels which sail on closed loop services with fixed schedules. These services connect major trade regions like Asia and Europe, and the liner shipping business is focused on utilizing the cargo capacity in their service network. Unused capacity constitute a loss that can be fatal in a market with a profit margin of just a few percent.  
@@ -136,8 +57,6 @@ Multi-commodity flow problems also have a block-angular structure, so our framew
 For this projection, we found a speed-up and a reduction in size of the resulting models similar to the ones seen for VCMs.
 
 This article is organized as follows. Section~\ref{sec:background} provides a background on container vessels and stowage rules. Section~\ref{sec:stowmodel} presents the VSM that will later be projected to the wanted VCM. Section~\ref{sec:solutionMethod} outlines the methods used in our FME framework. Section~\ref{sec:results} presents experimental results. Finally, Section~\ref{sec:preWork} gives an overview of related work and Section~\ref{sec:concl} concludes.
-
-
 
 \section{Background} \label{sec:background}
 
@@ -521,12 +440,12 @@ S_4^0 = S_4\cup \{-z_{e,4}^0 + 4 x_1 + 4 y_1 = 0,\: -z_{c,4}^0 + 7 x_4 + 8y_4 = 
 %
 When eliminating $Y\cup Z^0$ from $\mathfrak{S}$, we can choose to first eliminate $X_1\cap Y$, then $X_2\cap Y$ up to $X_k\cap Y$, and finally $Z^0\cup Y\setminus(X_1\cup \ldots\cup X_k)$. 
 Any variable in $X_1\cap Y$ has a zero-coefficient in all constraints not in $S^0_1$, and the constraints in $\mathfrak{S}\setminus S^0_1$ will therefore not be changed by the FME procedure when the variables in $X_1\cap Y$ are eliminated.  We can therefore set aside these inequalities until we have eliminated all variables in $X_1\cap Y$. Likewise, when eliminating variables in $X_i\cap Y$, no constraint from either $S_{i+1}^0\cup \ldots \cup S_k^0\cup S_\trt{g}^0$ or the already projected systems contain any variables from $X_i\cap Y$ and can hence be put aside and only included later when the variables in $Z^0\cup Y\setminus(X_1\cup \ldots\cup X_k)$ are eliminated. Thus, the following holds. 
-\begin{prop}
+\begin{proposition}
 {The projection of $S$ w.r.t. $Y$ defines the same feasible area as 
 the projection of $\mathcal{S}$ w.r.t. $Z^0 \cup Y\setminus (X_1\cup \ldots \cup X_k)$, where
 $\mathcal{S}$ is as defined in \eqref{eq:curlyS}.% = S^0_\trt{g} \cup S'^0_1\cup \ldots \cup S'^0_k$ and $S'^0_i$ is the projection of $S^0_i$ w.r.t. $Y\cap X_i$ for all $i\in\{1,\ldots, k\}$.
 }
-\end{prop}
+\end{proposition}
 
 $\mathcal{S}$ has by construction a block-angular structure and instead of eliminating $Z^0\cup Y\setminus(X_1\cup\ldots\cup X_k)$ immediately, if necessary, we can use further auxiliary variables to postpone ``mixing'' blocks when eliminating the remaining variables. 
 To do so, we collect all subsystems into $k_1$ small groups; we have mostly used groups of size 2, 3 or 1\footnote{``Combining'' a single subsystem corresponds to substituting a variable with a new variable, but can be done for convenience of notation.}. For each group $i$ we do as follows:
@@ -547,9 +466,9 @@ Each time we further decompose a system, we use a partitioning of the subsystems
 
 The intuition why this works is as before; projecting all $Y$ and $Z$-variables from the union of all the (unprojected) subsystems in the nodes of the tree corresponds to projecting the $Y$ variables from $S$, and because we can choose the elimination order of the variables, we only need to project the subsystems in the tree in the correct order (a rigorous proof can be found in \cite{MyTechRep}).
 
-\begin{prop}
+\begin{proposition}
 The projection of the system associated with the root of the tree constructed from $S$ and $Y$ w.r.t. the $Y$- and $Z$-variables as described corresponds to projecting $S$ w.r.t. $Y$.
-\end{prop}
+\end{proposition}
 
 \paragraph{Example}
 Consider the system from the previous example, which was decomposed into the subsystems $S^0_1, S_2^0, S_3^0, S^0_4$ and $S^0_\trt{g}$. Instead of projecting these subsystems as described in the previous example, we insert an additional level in the decomposition. We group the four subsystems into two groups, $\{S^0_1, S^0_2\}$ and $\{S^0_3, S^0_4\}$, and construct the tree structure in Figure~\ref{fig:decomp2}(a), where 
