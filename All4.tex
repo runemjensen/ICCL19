@@ -17,7 +17,7 @@
 \newcommand{\trt}[1]{\texttt{#1}}
 \newcommand{\mi}{\mathit}
 \newcommand{\ve}{\mathbf}
-\newcommand{\btablesize}{\begin{scriptsize}} %footnotesize
+\newcommand{\btablesize}{\begin{scriptsize}}
 \newcommand{\etablesize}{\end{scriptsize}}
 \newcommand{\set}[2]{\{\;{#1}\;|\;{#2}\;\}}
 \newcommand{\lre}{\color{red}{\{}}
@@ -49,54 +49,25 @@ Our framework is applicable to LP models in general, but are particularly effect
 
 \section{Introduction}
 Container shipping is a central element in the clockwork of global trade \cite{EC13}. A container liner shipping company operates a set of container vessels which sail on closed loop services with fixed schedules. These services connect major trade regions like Asia and Europe, and the liner shipping business is focused on utilizing the cargo capacity in their service network. Unused capacity constitute a loss that can be fatal in a market with a profit margin of just a few percent.  
-To maximize utilization of capacity, it is central for a liner shipping company to be able to estimate the residual capacity of a container vessel. This is challenging in practice, since %. For an air plane, an empty seat usually means that the plane can fit an extra passenger. For a container vessel, on the other hand, 
-an empty slot may be impossible to utilize for a wide range of reasons. %For instance, if the slot can be loaded with a container within the weight and volume limits of its stack, the container may exhaust the lashing gear or cause the vessel to be unstable or exceed its stress limits. Moreover, it may block containers below it to be discharged in earlier ports, ruin the utilization of quay cranes, be in conflict with stowage rules or segregation rules for dangerous cargo, or obstruct the view of the captain. 
-%
+To maximize utilization of capacity, it is central for a liner shipping company to be able to estimate the residual capacity of a container vessel. This is challenging in practice, since an empty slot may be impossible to utilize for a wide range of reasons. 
 For instance, the various stowage rules and seaworthiness requirements interact such that the free capacity of each container type and weight class is a complex function of the composition of cargo on board and the design of the vessel. Often it is only the stowage planning team that can determine the residual capacity of a vessel accurately, and even they may sometimes have to manually construct a stowage condition of the vessel to be able to do it. While stowage planners may be able to estimate free vessel capacity, the knowledge is primarily needed in higher order functions such as: {\em uptake management} that control the sale of cargo bookings to fill the vessels with profitable cargo; {\em capacity management} that route cargo through the service network; {\em network management} that makes changes to the service network; and {\em fleet management} that charters and buys vessels for the service network and reposition vessels between closing and opening services. Decision makers in these functions seldom have stowage insight or time to consult the stowage team. They usually boil down the free capacity of a vessel to its nominal volume, weight, and reefer (refrigerated containers) capacity minus total volume, weight and reefer number of containers already on board. This simple three dimensional capacity model is inherently optimistic, since it ignores stowage complications. It has been shown that it can lead to revenue over-estimates of more than 15\% \cite{AlbertosThesis}. This can cause sub-optimal decisions that significantly harm business.
 
-\color{red}{Previous work has contributed frameworks for automated stowage planning (e.g., \cite{roach00,kimkang02,ambrosino04,low09,delgado09,pacino12}, and recently, linear stowage planning models were shown to scale to large container vessels (\cite{pacino11,AlbertosThesis}). These latter models embed an accurate capacity model, but since they specify the exact positions of the containers, they are too large for use as capacity models in higher order functions, since these tasks often require several hundred capacity models to be solved simultaneously.}
-\color{black}  
-In this article, we present a method to calculate a Vessel Capacity Model (VCM) automatically from a linear Vessel Stowage Model (VSM) based on previous research on stowage optimization \cite{pacino11,AlbertosThesis}. 
+Previous work has contributed frameworks for automated stowage planning (e.g., \cite{roach00,kimkang02,ambrosino04,low09,delgado09,pacino12}, and recently, linear stowage planning models were shown to scale to large container vessels (\cite{pacino11,AlbertosThesis}). These latter Vessel Stowage Models (VSMs) embed an accurate capacity model, but since they specify the exact positions of the containers, they are too large for use as capacity models in higher order functions, since these tasks often require several hundred capacity models to be solved simultaneously.
+In this article, we present a method to calculate a Vessel Capacity Model (VCM) automatically from a linear Vessel Stowage Model (VSM).
 The basic idea is to derive the VCM by abstracting away the slot position of containers in the VSM so that the model only expresses the relationship between the residual capacity of each possible container type.
 Inspired by previous work in constraint programming (e.g., \cite{lassez90}) and software verification (e.g., \cite{benoy05}), we do this by projecting container position variables out of the mentioned stowage models using a framework based on Fourier-Motzkin Elimination (FME). Similar to other recent FME frameworks (e.g., \cite{simon05,lukatskii08,shapot12}), our framework includes additional features such as using equalities for substitutions (Gauss-elimination), removing syntactically redundant constraints, a complete removal of redundant constraint after each variable elimination, and a method for coarsening the boundary of the projection. Our main computational contribution is a novel decomposition method that takes advantage of block-angular structured models to significantly speed-up the projection of variables in these models. Additionally, the complete redundancy is parallellized, and the framework includes preprocessing of the constraint system including removal of less strict inequalities.
-\color{red}{Other FME-based frameworks for projection includes \cite{simon05,lukatskii08,shapot12}. 
-Similar to our framework, these use simplifications, redundancy removal and approximation-procedures. For the latter, \cite{simon05} use the extreme-point method of \cite{huynh92}, while the boundary-approximation of \cite{lukatskii08,shapot12} involves a successive increase of the allowable deviation from the feasible area and a permissible maximal ratio of removed non-redundant inequalities.
-Seen from the perspective of capacity models, both frameworks are used on quite small systems. Furthermore, the systems in \cite{simon} are also sparse. %The framework of \cite{simon05} is used on quite small and sparse systems, and the authors of \cite{lukatskii08,shapot12} performs tests with sizes between $81$ inequalities and $40$ variables to $201$ inequalities and $100$ variables.
-%These, however, only operate on what in our domain would be considered quite small systems. 
-Our FME-based framework is to our knowledge the first that can take advantage of block-angular structure in the system.}
 
-{Particularly within linear programming, work has also been done in the area of classifying and removing redundant inequalities in a inequality system as well as finding implicit equalities, e.g. \cite{telgen83,lassez93,karwan83,andersen95,mattheiss73,brearley75,maros} to name a few. %de sidste to er nogen, vi har brugt og nævnt før
-Many of these are not applicable for us, since they eg. are to be performed within the simplex procedure or use an optimal extreme point.} %However, we have used know methods for our preprocessing, eg. \cite{andersen95,brearley75,maros} in our preprocessing and clean-up method.
-
-{Other methods exist for computing the projection of a feasible area of an (in)equality system, that are not based on FME. The method in \cite{huynh92} finds extreme points in the projection space incrementally. It can therefore also be used to approximate the projection as is done in \cite{simon05}. It is recommended for dense systems.
-Another example is the method introduced in \cite{jones04}, which computes all facets of the projection iteratively using a face-lattice. 
-This method is recommended by the authors for polytopes with a low facet count and a high vertex count.}
-
-\color{black}
 Our experimental evaluation of computing VCMs with this method shows that FME generates a large number of redundant constraints in each projection iteration that can be removed. In theory, the number of non-redundant constraints can grow exponentially with the number of projected variables \cite{monniaux10}. However, the number of constraints and non-zeros in the resulting capacity models typically are reduced by an order of magnitude compared to their corresponding stowage models. Moreover, the decomposition method reduces the size of the intermediary models produced by FME, causing less time to be needed for removing redundant constraints, which again speeds up the projection process significantly. In addition, for the models that include hydrostatic constraints, the resulting VCMs can be solved 20-35 times faster than their VSMs with only a negligible loss in accuracy. Although it can take several hours to derive a capacity model due to the clean-up of redundant constraints, this only has to be done one time for a vessel class. In this way, the approach is suitable for computing capacity models that can be applied in higher order functions of liner shipping companies such as uptake-, capacity-, fleet-, and network management. Moreover, since they are linear and much faster to solve than their corresponding stowage models, they also can be integrated in decision support systems used to optimise these functions.
 
 Multi-commodity flow problems also have a block-angular structure, so our framework applies to these problems as well. We assume that the goal is to model how the amount of each commodity at the sinks depends on the amount of the commodities at the sources. For this purpose, the amount of each commodity that flows on edges is irrelevant and eliminated from the system. 
 For this projection, we found a speed-up and a reduction in size of the resulting models similar to the ones seen for VCMs.
 
-This paper is organized as follows. In Section~\ref{sec:notation} we introduce the required definitions and notation. 
-Then Section~\ref{sec:method} outlines the methods used in our FME framework including how block-angular problems are decomposed. Section~\ref{sec:model} shortly present the VSMs that are projected, after which our experimental results (Section~\ref{sec:results}) follows. Section~\ref{sec:related} present related work, before Section~\ref{sec:conclusion} concludes.
+This paper is organized as follows. Section~\ref{sec:model} briefly present the VSMs that are projected, and Section~\ref{sec:notation} introduces the required definitions and notation. 
+Then Section~\ref{sec:method} outlines the methods used in our FME framework including how block-angular problems are decomposed. 
+Our experimental results then follows in Section~\ref{sec:results}. Section~\ref{sec:related} present related work, before Section~\ref{sec:conclusion} concludes.
 %
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\section{Definitions and notation} \label{sec:notation}
-In this paper, a constraint system $S$ is a set of equalities and inequalities over the same set of variables, $\VAR(S)=\{x_1,\ldots, x_n\}$. Each constraint $c$ is either an equality, written $a_1x_1 + \ldots +a_nx_n = b$, or an inequality, written $a'_1x_1 + \ldots +a'_nx_n\leq b'$. Alternatively, we use dot-product notation for the left-hand-side, i.e. $\ve{a}\cdot \ve{x}$. 
-We let $\var(c)$ denote the variables whose coefficient in $c$ is nonzero and say that $c$ \emph{uses} $x$ if $x\in \var(c)$. 
-The set of points in $\mathbb{R}^{|\VAR(S)|}$ that satisfies all constraints in $S$ is called $S$'s \emph{feasible area}. A constraint $c\in S$ is \emph{redundant} iff it does not influence the feasible area for $S$, otherwise it is called \emph{non-redundant}.  
-
-For some variables $Y\subseteq \VAR(S)$, we are not interested in their values in a feasible point - we just want to know that a satisfying value exists. This property is captured by the \emph{projection of $S$ w.r.t. $Y$}, which is the largest set consisting of values for $\VAR(S)\setminus Y$ that can be extended with values for $Y$ such that all constraints in $S$ are satisfied. 
-%
-The projection of a constraint system is a uniquely determined subset of $\mathbb{R}^{|\VAR(S)\setminus Y|}$, but also the feasible region of another system $S'$ (see e.g. \cite{ziegler95}). We are mostly interested in the latter, since it is the relationship between the values in the projection that is relevant to us, and we allow ourselves to write that ``$S'$ is the projection of $S$ w.r.t. $Y$'' if the feasible area of $S'$ equals the projection of $S$, though such a system is not uniquely determined.
-We note, that since we are dealing with subsets of multi-dimensional Euclidian spaces, the dimension and the order of the variables are important. However, in order to simplify the presentation, we do not explicitly specify these for every considered projection/constraint system $S'$. A more stringent exposition keeping track of the variable sets and ordering can be found in \cite{MyTechRep}.
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%Vessel Stowage Models
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{Vessel Stowage Model}\label{sec:model}
-%\documentclass{llncs}
-%\usepackage{graphicx} 
-%\begin{document}
 In this section, we will briefly introduce the vessel stowage model (VSM) that is the basis for our projections. The model is an adaption from the model presented in~\cite{ICCL18}. 
 It includes various stowage constraints and further describes hydrostatic constraints reasonably accurate while
 abstracting away much of the unnecessary complexity relating to the physical layout of the vessel that is present in the data describing it. 
@@ -140,16 +111,19 @@ Capacities for individual tanks are pooled into capacities for tanks within a se
 In the VCM, we further have constraints that limit shear force and bending moment at the sections' end points. To obtain this from the data, we approximate the forces/moments at the sections' end points as well as the limits for these forces/moments as described below. 
 
 First we find the area of displaced water (ADW) at a station for any displacement by linearizing the values in the discrete bonjean table. Linearizing these values, we find the ADW (for any displacement) at any given cross section of the vessel. Knowing the position of stations and the sections' end points, this gives us the volume of displaced water between each section's end points. Multiplied with $G$ (the acceleration of gravity), this is the buoyancy of the section, while the gravitational force equals the total weight of the section multiplied with $G$. Subtracting one from the other gives us the resulting force of the section. The shear force at an end point $p$ can then be calculated as the sum of resulting forces of sections fore of $p$, while the bending moment equals the sum of resulting forces of sections $s$ lying fore of $p$ times the distance from $p$ to $s$'s longitudinal midpoint.
-%
 The limit for the forces/moments at $p$ is calculated by linearizing the corresponding limits at the frame closest to $p$ at either side of it.  
-%
 A more detailed description can be found in~\cite{ICCL18} as well as a description of the accuracy of the hydrostatic approximations.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Definitions and notation} \label{sec:notation}
+In this paper, a constraint system $S$ is a set of equalities and inequalities over the same set of variables, $\VAR(S)=\{x_1,\ldots, x_n\}$. Each constraint $c$ is either an equality, written $a_1x_1 + \ldots +a_nx_n = b$, or an inequality, written $a'_1x_1 + \ldots +a'_nx_n\leq b'$. Alternatively, we use dot-product notation for the left-hand-side, i.e. $\ve{a}\cdot \ve{x}$. 
+We let $\var(c)$ denote the variables whose coefficient in $c$ is nonzero and say that $c$ \emph{uses} $x$ if $x\in \var(c)$. 
+The set of points in $\mathbb{R}^{|\VAR(S)|}$ that satisfies all constraints in $S$ is called $S$'s \emph{feasible area}. A constraint $c\in S$ is \emph{redundant} iff it does not influence the feasible area for $S$, otherwise it is called \emph{non-redundant}.  
+
+For some variables $Y\subseteq \VAR(S)$, we are not interested in their values in a feasible point - we just want to know that a satisfying value exists. This property is captured by the \emph{projection of $S$ w.r.t. $Y$}, which is the largest set consisting of values for $\VAR(S)\setminus Y$ that can be extended with values for $Y$ such that all constraints in $S$ are satisfied. 
 %
-%Further requirements to ensure the stability of the vessel are imposed in real life and considered eg. in \cite{AlbertosThesis}, but is not considered here.
-%
-
-
-
+The projection of a constraint system is a uniquely determined subset of $\mathbb{R}^{|\VAR(S)\setminus Y|}$, but also the feasible region of another system $S'$ (see e.g. \cite{ziegler95}). We are mostly interested in the latter, since it is the relationship between the values in the projection that is relevant to us, and we allow ourselves to write that ``$S'$ is the projection of $S$ w.r.t. $Y$'' if the feasible area of $S'$ equals the projection of $S$, though such a system is not uniquely determined.
+We note, that since we are dealing with subsets of multi-dimensional Euclidian spaces, the dimension and the order of the variables are important. However, in order to simplify the presentation, we do not explicitly specify these for every considered projection/constraint system $S'$. A more stringent exposition keeping track of the variable sets and ordering can be found in \cite{MyTechRep}.
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{Solution method} \label{sec:method}
 This section introduces our FME-based projection framework for calculating the projection of the constraint system $S$ w.r.t. $Y$. It can be used for massive variable elimination in any linear inequality system but has been designed to take advantage of block-angular structures often found in real-world models including the VSM. 
@@ -158,7 +132,7 @@ The methods for projecting any (not necessarily structured) constraint system ar
 \subsection{Projection procedure}\label{sec:projMethod}
 The projection procedure starts with a preprocessing of the constraint system, i.e. we reduce it by removing easily identifiable redundant constraints and assign necessary bounds and values to variables (e.g., \cite{brearley75,andersen95,maros}).
 Then we use the equalities in the reduced system to isolate variables from $Y$ and substitute in the rest of the system, %. This eliminates variables from the system, and we 
-refered to as \emph{Gauss-elimination} (e.g., \cite{duffin74,simon05}).  
+referred to as \emph{Gauss-elimination} (e.g., \cite{duffin74,simon05}).  
 Subsequently, we successively eliminate one variable from $Y$ using Fourier-Motzkin elimination and remove redundant inequalities from the system afterwards, until no more variables remain to be eliminated. Eliminating a variable from the system causes some of its constraints to be removed, while new inequalities are added. Only the added inequalities are checked for redundancy. % since the remaining constraints have already have been checked previously and do not later become redundant. 
 At the top-level, the pseudocode for our projection method is thus as described in the pseudocode in Algorithm~\ref{alg:FMEF}. 
 \setlength{\floatsep}{10pt} %standard minimum er vist 16
@@ -181,28 +155,22 @@ At the top-level, the pseudocode for our projection method is thus as described 
 Each sub-procedure in this algorithm is detailed further below. We start with the methods for variable elimination, before we describe the redundancy removal and finally the preprocessing step. 
 
 \paragraph{Fourier-Motzkin-elimination} 
-Fourier-Motzkin Elimination (FME) is a classical algorithm for producing the projection of a set of variables from an inequality system, i.e. a constraint system with no equalities. The method successively eliminates one variable $x\in Y$ until all required variables have been eliminated. To eliminate $x\in Y$, the constraints in $S$ are first divided into sets, $\Pos_S(x)$, $\Neg_S(x)$, and $\mi{Zero}_S(x)$ depending on the sign of $x$'s coefficient. %Since the method traditionally works on systems without equalities, 
-Each equality is treated as two inequalities, and bounds are treated as any other inequalities. %, eg. $x\leq ub_x$ is added to $\Pos_S(x)$, and $-x\leq - lb_x$ is added to $\Neg_S(x)$ if the given bounds exist. 
+Fourier-Motzkin Elimination (FME) is a classical algorithm for producing the projection of a set of variables from an inequality system, i.e. a constraint system with no equalities. The method successively eliminates one variable $x\in Y$ until all required variables have been eliminated. To eliminate $x\in Y$, the constraints in $S$ are first divided into sets, $\Pos_S(x)$, $\Neg_S(x)$, and $\mi{Zero}_S(x)$ depending on the sign of $x$'s coefficient. 
+Each equality is treated as two inequalities, and bounds are treated as any other inequalities. 
 A new system $S'$ is then created, which is the projection of $S$ w.r.t. $\{x\}$. It consists of $\mi{Zero}_S(x)$, together with one inequality, $i_{p,n,x}$, for each pair $(p,n)\in \Pos_S(x)\times \Neg_S(x)$. $i_{p,n,x}$ is the addition of positive multiples of $p:\ve{a}\cdot\ve{x} \leq b$ and $n:\ve{a}'\cdot\ve{x} \leq b'$ such that the coefficient of $x$ in the resulting inequality is $0$, i.e.
 \[
 i_{p,n,x}: -a'_x\cdot \ve{a}\cdot\ve{x} + a_x\cdot \ve{a}'\cdot\ve{x} \leq -a'_x\cdot b + a_x\cdot b'.
 \]
-%By construction, the coefficient for $x$ in $i_{p,n,x}$ is zero, and the resulting system 
-%$S' = \mi{Zero}_S(x) \cup \set{i_{p,n,x}}{(p,n)\in \Pos_S(x)\times Neg_S(x)}$ is the projection of $S$ w.r.t. $\{x\}$.  
-%
 The order in which variables are eliminated naturally influences the size of the intermediary inequality systems. We have chosen to use the greedy heuristic {that minimizes the number of new inequalities in the immediately next system \cite{duffin74}}, which is a commonly used heuristic. It is easily calculated from the current system as the variable $x\in Y$ that minimizes $|\Pos_S(x)||\Neg_S(x)| - |\Pos_S(x)|-|\Neg_S(x)|$.  In the worst case scenario, %where $|\Pos_S(x)| = |\Neg_S(x)| = \frac{|S|}{2}$ for all $x\in Y$, 
 the number of inequalities in the created system $S'$ is $\frac{1}{4}|S|^2$, which implies that (both time and space) complexity is double-exponential. For a large, dense system, the growth will be substantial, which prohibits it from use for practical purposes \emph{if} the added inequalities are non-redundant or the non-redundant inequalities are not removed ({see e.g. \cite{lassez93} and \cite{lukatskii08}}). It should, however, also be emphasized that not all inequalities in the succeeding system are necessarily non-redundant; in fact, the number of non-redundant inequalities will at most grow exponentially \cite{monniaux10}.
 
 \paragraph{Gauss-elimination} 
-%Equalities in a constraint system can be treated as two inequalities when doing FME as described above. However, 
 An equality $e$ can be used to isolate a variable $x\in Y$ which can then be substituted in all other constraints in $S$ (a Gauss-elimination). This eliminates $x$ from the system and does not cause the same combinatorial explosion of inequalities as FME may do (e.g., \cite{duffin74,simon05}). Before performing FME we therefore do as many Gauss-elimination of variables in $Y$ as possible. To avoid density, when the system $S$ contains several equalities, we first choose the variable $x$ (used in any equality) that is used the fewest times in total in $S$. We then choose the equation $e$ among those using $x$ that uses the fewest variables, and do Gauss-elimination of $x$ using $e$. This is then repeated until there are no more equalities using variables from $Y$.
 
 \paragraph{Redundancy removal} 
 To detect redundancy, we examine each inequality $c: \ve{a}\cdot \ve{x}\leq b$ in turn and remove it from the system if $\max \ve{a}\cdot \ve{x}$ subject to $S\setminus\{c\}$ is less than or equal to $b$. The property can be checked using an LP solver. Only \underline{in}equalities are examined, since we want to keep the equalities for use in Gauss-elimination. Not all inequalities have to be examined, though. When removing redundancy after projecting $x$ from $S$ we do not need to check inequalities in $\mi{Zero}_S(x)$; if they were non-redundant before the elimination, they will be non-redundant after.
 
 For large systems, checking all constraints for redundancy is time-consuming. We have therefore implemented a method for redundancy removal that uses several threads in parallel. Each thread checks one inequality at a time, while a manager takes care of the communication and keeps track of the found redundant inequalities. 
-%The method uses a manager to keep track of $k>0$ individual workers who do the actual redundancy checking.
-%The manager assigns a different inequality to each of the workers, who in parallel each check if their own inequality is redundant w.r.t. their own copy of $S$. When each worker is done, it reports the result back to the manager, and it gets a new inequality to check. If the reported inequality was redundant, the other workers are notified and they remove it from their own copy of the system the next time they check a new inequality. The manager collects a set containing all the reported redundant inequalities, and when all inequalities are checked, these inequalities can then be removed from the system. 
 For the method to work correctly, it is important that $S$ contains no two constraints defining the same halfspace since each one on its own would be redundant due to the other. Such easily detectable redundancies are removed prior to the redundancy removal. We notice that rational numbers are used in the implementation to avid rounding errors. 
 
 Several of the constants in the data used for our vessel models are results of various approximations and hence the boundary of the feasible area is not exact. Coarsening the boundary is therefore permissible, and we also remove inequalities that are \emph{``almost redundant''}. An inequality $c: \ve{a}\cdot\ve{x}\leq b$ is almost redundant if $\max \ve{a}\cdot\ve{x}$ subject to $S\setminus\{c\}$ is less or equal to $b + \epsilon\cdot |b|$ for a small $\epsilon$, see Figure~\ref{fig:almostRedundant}; for our experiments we have used $\epsilon = 0.02$. If $b=0$, we instead require the maximum to be smaller than a given $\epsilon'$. 
@@ -212,91 +180,82 @@ Several of the constants in the data used for our vessel models are results of v
 	\caption{The inequality $c$ is almost redundant compared to $c'$, and vice versa.}
 	\label{fig:almostRedundant}
 \end{figure}
-Therefore, %instead of only collecting a set of redundant inequalities, 
-the manager also collects a set of almost redundant inequalities; the property is checked simultaneously with the ordinary redundancy check. After the parallel redundancy check, \emph{one} thread is then used to go through all the almost redundant inequalities one by one, and the ones that are still almost redundant are removed. %The almost redundant inequalities found this way is then removed from the system $S$.  
+Therefore, the manager also collects a set of almost redundant inequalities; the property is checked simultaneously with the ordinary redundancy check. After the parallel redundancy check, \emph{one} thread is then used to go through all the almost redundant inequalities one by one, and the ones that are still almost redundant are removed. 
 %
-This %Almost redundant inequalities 
-\emph{cannot} be done in parallel. Otherwise, both $c$ and $c'$ in Figure~\ref{fig:almostRedundant} could be found almost redundant by two different threads, causing them both to be eliminated. In a sequential check, however, only the first to be examined would be removed. 
+This \emph{cannot} be done in parallel. Otherwise, both $c$ and $c'$ in Figure~\ref{fig:almostRedundant} could be found almost redundant by two different threads, causing them both to be eliminated. In a sequential check, however, only the first to be examined would be removed. 
 
 Methods for coarsening the boundary of the feasible area that relies on removing almost redundant inequalities are also used in \cite{lukatskii08} and \cite{shapot12}, though their approaches are different.
 
 \paragraph{Preprocessing}
-Prior to the projection, we perform some simple preprocessing steps repeatedly as long as a reduction happens. For this, we maintain an upper and lower bound for each variable and each constraint's left-hand-side. %, which initially is set to $+\infty$ and $-\infty$, respectively. 
-The bounds of a constraint is linked to the bounds of the variables it uses, so tightening a bound of a variable or constraint can imply a tightening of another bound. %, which we make sure to update as part of the preprocessing. 
+Prior to the projection, we perform some simple preprocessing steps repeatedly as long as a reduction happens. For this, we maintain an upper and lower bound for each variable and each constraint's left-hand-side. 
+The bounds of a constraint is linked to the bounds of the variables it uses, so tightening a bound of a variable or constraint can imply a tightening of another bound. 
 
 The steps are implemented with special care of equalities and working with the assumption that the system is feasible (details can be found in \cite{MyTechRep}).
 Besides updating bounds, we remove all empty inequalities and unused variables $x\in Y$.  
 %
 If the upper and lower bounds of a constraint (or variable) are equal, each of the used variables are substituted with its upper or lower bound that results in the constraint's bound. 
-%if the upper and lower bound for a variable equals each other, then we substitute the variable with this bound. 
+
 %
-We remove a constraint $\ve{a}\cdot \ve{x} \leq b$ if its upper bound %(due to the bounds of the variables) 
+We remove a constraint $\ve{a}\cdot \ve{x} \leq b$ if its upper bound 
 is less or equal to $b$. 
 If the same is true for an equality $\ve{a}\cdot \ve{x}=b$, due to the feasibility assumption, the variables used in $c$ are substituted with the bounds that makes $\ve{a}\cdot \ve{x}$ equal $b$. 
-%Due to the feasibility assumption, both the upper and lower bound for the equality $\ve{a}\cdot \ve{x}=b$ is set to $b$. 
 
-If $\Neg_S(x)=\emptyset$ for an $x\in Y$ %(implying that $x$ does not occur in an equality and has no (finite) lower bound) 
+
+If $\Neg_S(x)=\emptyset$ for an $x\in Y$ 
 then we remove all constraints in $\Pos_S(x)$. If $\Neg_S(x)$ only consist of the inequality defining the lower bound of $x$, $-x\leq -lb_x$, then we substitute $x$ with $lb_x$ in all constraints. Similarly w.r.t. $\Pos_S(x)$. We notice that this is \emph{not} a normal preprocessing step, but corresponds to making a FME on $x$, and this changes the feasible area of $S$. 
 
-Comparing two constraints $c$ and $c'$ syntactically, we can in some cases detect redundancy. %To do this, all pairs of constraints are then compared in an efficient manner.
+Comparing two constraints $c$ and $c'$ syntactically, we can in some cases detect redundancy. 
 If $c:\ve{a}\cdot \ve{x}\otimes b$ and $c': \ve{a}'\cdot \ve{x}\otimes' b'$ (where $\otimes,\otimes'\in\{\leq,=\}$), the following holds.
 \begin{itemize} \itemsep0em 
 \setcounter{enumi}{\value{counterName}}
 \item 
 If $\ve{a}=\sigma\cdot \ve{a}'$, then $c$ and $c'$ are \emph{linearly dependent} (\cite{lassez93}). Hence, $c$ is redundant if
 it is an \underline{in}equality and $\sigma\cdot b'\leq b$ and either: $\sigma\geq 0$; or $\sigma<0$ and $c'$ is an equality. $c$ is also redundant if both $c$ and $c'$ are equalities and $\sigma\cdot b'\leq b$. 
-%It is enough to check if this holds for $\sigma = \frac{c_x}{c'_x}$ for the first variable $x$ used by $c'$.
 \item
 If all variables used in $c$ and $c'$ are non-negative, and there exists a $\sigma\geq 0$ such that $a_x \leq \sigma \cdot a'_x$ for all $x$, while $\sigma\cdot b' \leq b$, then $c$ is \emph{less strict} than $c'$; it is redundant and hence removed. If $c$ is an equality, so must $c'$ be, and hence $c'$ is turned into an equality. 
-%This is only required to be tested for specific values of $\sigma$ that depends on whether $c'$ has a variable with a negative coefficient or not \cite{MyTechRep}.
 \end{itemize} 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \subsection{Decomposing block-angular structured system}\label{sec:decomp}
 In the following we will describe how the block-angular structure of a system can be exploited to make our projection framework scale. Detailed pseudocode and correctness proofs can be found in \cite{MyTechRep}. 
 
-The constraints in the VCM has a special structure that can be illustrated as in \ref{fig:structure}. The constraints defining the capacity for each location $l$ can be gathered/collected in a subsystem $C_l$. The constraints in $C_l$ only uses variables that are not used in $C_{l'}$ for another location $l'$. %, $S_1, \ldots, S_k$, using smaller, disjoint sets of variables, $X_1, \ldots, X_k$, and a global system, $S_\trt{g}$, that uses variables from several of the local subsystems. 
-The [defining total number of a type]-constraint, the hydrostatic constraints and the total displacement-capacity constraint [reference], however, make up another, \emph{global} subsystem, $S_g$, where the constraints also uses variables from several of the local subsystems (in this case, the weight-variables). That is, the constraints in the VSM have a natural \emph{(primal) block angular structure} \cite{williams}.
+The constraints defining the capacity for a section $i$ can be collected in a \emph{local} subsystem $S_i$, whose constraints only use variables that are not used in $S_{i'}$ for another section $i'$. The remaining constraints make up another \emph{global} subsystem, $S_\texttt{g}$, where the constraints also use variables from several of the local subsystems. That is, the constraints in the VSM have a natural \emph{(primal) block-angular structure} \cite{williams} as depicted in Figure~\ref{fig:decomp2}.
 
-To obtain a VCM, we want to eliminate all but the [total-type-number]-variables. When doing so, the global constraints cause the local subsystems to get ``mixed'' when variables are eliminated, eg. .... This result in an increasing number of global and more dense constraints, which again makes FME perform worse. 
-To avoid the immediate mix of variables, we will define and use auxiliary variables to ensure that we can project the subsystems separately without producing global constraints, before we combine the projected subsystems and eliminate the auxiliary variables. To separate and remove local variables from the global constraints, we do as follows for all subsystems $C_i$.
+To obtain a VCM, we want to eliminate all but the variables counting the total number of containers of each type. The variable being eliminated is (with high probability) used in the global constraints, which causes the inequalities constructed by FME to use variables from all subsystems, that is, the local subsystems gets ``mixed''. This result in an increasing number of global and more dense constraints, which again makes FME perform worse. 
+To avoid the immediate mix of variables, we will define and use auxiliary variables to ensure that we can project the local subsystems separately without producing global constraints, before we combine the projected subsystems and eliminate the auxiliary variables. To separate and remove local variables from the global constraints, we do as follows for all subsystems $S_i$.
 
 \begin{itemize}\itemsep0em
-\item For each global constraint $c$ using variables in $C_i$, we define an auxiliary variable that equals the variables in $C_i$'s contribution to $c$. We add the equality defining this new variable to $C_i$, and we substitute with it in $c$. 
-For example, if $c: w_s - \sum_{t\in T}\sum_{l\in L_s}W_\tau x_{l,\tau} + xt_s + W_s = 0$ for an $s\in S$ ... $C_i$ ... we would add $z = \sum_{t\in\tau}W_\tau x_{l',\tau}$ to $C_i$ and rephrase $c$ as $c: w_s - z - \sum_{t\in T}\sum_{l\in L_s\setminus{l'}}W_\tau x_{l,\tau} + xt_s + W_s = 0$.
-We name the thusly produced subsystem $C_i^0$. 
-
-\item Then, we project $S_i^0$ w.r.t. all variables from $Y\cap X_i$, resulting in the system $S'^{\,0}_i$. We do keep the auxiliary $z^0$-variables. 
+\item For each global constraint $c$ using variables in $S_i$, we define an auxiliary variable $z^0_{c,i}$ that equals the variables in $S_i$'s contribution to $c$. We add the equality defining $z^0_{c,i}$ to $S_i$, and we substitute with it in $c$. 
+We name the thusly produced subsystem $S_i^0$. 
+\item Then, we project $S_i^0$ w.r.t. all variables from $Y\cap X_i$, where $X_i=\mi{var}(S_i)$, resulting in the system $S'^{\,0}_i$. We do keep the auxiliary $z^0$-variables. 
 Because of these auxiliary variables this only produces inequalities with variables not present in other subsystems $S_j$. 
 \end{itemize}
 After projecting each $S_i^0$ we can then combine the results with the rephrased, global constraints, $S_\trt{g}^0$, to create the system $\mathcal{S} \overset{\text{def.}}{=}
-\mathcal{S} = S^0_\trt{g} \cup S'^{\,0}_1\cup \ldots \cup S'^{\,0}_k$. %where $S'^{\,0}_i$ is the projection of $S^0_i$ w.r.t. $Y\cap X_i$ for all $i\in\{1,\ldots, k\}$.
+\mathcal{S} = S^0_\trt{g} \cup S'^{\,0}_1\cup \ldots \cup S'^{\,0}_k$.
 We can then eliminate from $\mathcal{S}$ all the auxiliary $z^0$-variables, $Z^0$, plus any remaining variables in $Y$. 
 
 \paragraph{Example}
 As an example, we consider an extremely simplified VSM consisting of the constraints indicating the capacities for each section $i\in S$, constraints that counts the total of each type $\tau\in T$, and a constraint that limits the total weight of cargo. That is, the constraint system is:
 \begin{align*}
-C_i \text{ for all }i\in S&: \left\{ \begin{array}{ll}
+S_i \text{ for all }i\in S&: \left\{ \begin{array}{ll}
 		\smashoperator[r]{\sum_{\tau \in T^\trt{20}}} x_{i,\tau} \leq C_i^\trt{20} 									& \quad\smashoperator[r]{\sum_{\tau \in T^\trt{20}}} W_\tau\cdot x_{l,\tau} \leq C_l^\trt{W20}\\
 		\smashoperator[r]{\sum_{\tau \in T\setminus T^\trt{20}}} 2\cdot x_{i,\tau} \leq C_l^\trt{40}& \quad 0.5 \smashoperator[lr]{\sum_{\tau \in T^\trt{20}}} W_\tau\cdot x_{l,\tau} + \smashoperator[lr]{\sum_{\tau \in T\setminus \in T^\trt{20}}} W_\tau\cdot x_{l,\tau} \leq C_l^\trt{W40} \\
 		\smashoperator[r]{\sum_{\tau \in T^\trt{R}}} x_{l,\tau} \leq C_l^\trt{RS}										& \quad \smashoperator[lr]{\sum_{\tau \in T^\trt{R}\cap T^\trt{20}}} 0.5\cdot x_{l,\tau} + \smashoperator[lr]{\sum_{\tau \in T^\trt{R}\setminus T^\trt{20}}} x_{l,\tau} \leq C_l^\trt{RC}\\ 
 		&\quad \smashoperator[r]{\sum_{\tau \in T^\trt{20}}} x_{l,\tau} + 2\cdot\smashoperator[lr]{\sum_{\tau \in T\setminus T^\trt{20}}} x_{l,\tau} \leq C_l^\trt{TEU}
 \end{array}\right.\\
-C_\texttt{g} &: \left\{ \begin{array}{ll} 
+S_\texttt{g} &: \left\{ \begin{array}{ll} 
 			x_\tau = \sum_{i\in S} x_{i,\tau} & \forall{\tau \in T}\\		
 			\sum_{i\in S}\sum_{\tau\in T}W^\tau x_{i,\tau} \leq D
 \end{array}\right.
 \end{align*}
-This is naturally block-angular structured since each $C_i$ constitutes a local system, while the remaining constraints, $C_\texttt{g}$, makes up the global constraints.  
-%$C_\texttt{g} = \cup_{\tau\in T} \{ x\tau = x_{\tau,1} + x_{\tau,2} + x_{\tau,3} + x^{\tau,4}\} \cup \{\sum_{\tau\in T}W^\tau (x_{\tau,1} + x_{\tau,2} + x_{\tau,3} + x_{\tau,4}) \leq D) \}$. $C_1\cup C_2\cup C_3 \cup C_4$
+This is naturally block-angular structured since each $S_i$ constitutes a local system, while the remaining constraints, $S_\texttt{g}$, makes up the global constraints.  
 
 To obtain a less detailed VCM from this VSM, we want to eliminate all variables but $\set{x^\tau}{\tau\in T}$. 
 To exploit the structure of the system, we first define a variable to hold the weight of cargo in each section $i$, $w_i$. We also define the variable $x'_{i,\tau} = x_{i,\tau}$, although this is only a renaming of the variables at first glance. We add the defining constraints to the relevant local system, and redefine the global constraints in terms of the new variables. 
-That is, the $i$'th local subsystem is now $C_i^0 = C_i \cup \{w_i = \sum_{\tau\in T} W^\tau x_{\tau,i}\} \cup \bigcup_{\tau\in T}\{x'_{i,\tau} = x_{i,\tau}\}$, while the new system of global constraints is $C_g^0 = \cup_{\tau\in T}\{x^\tau = \sum_{i\in S} x'_{i,\tau}\} \cup \{w_1 + w_2 + w_3 + w_4 \leq D\}$. 
+That is, the $i$'th local subsystem is now $S_i^0 = S_i \cup \{w_i = \sum_{\tau\in T} W^\tau x_{\tau,i}\} \cup \bigcup_{\tau\in T}\{x'_{i,\tau} = x_{i,\tau}\}$, while the new system of global constraints is $S_g^0 = \cup_{\tau\in T}\{x^\tau = \sum_{i\in S} x'_{i,\tau}\} \cup \{w_1 + w_2 + w_3 + w_4 \leq D\}$. 
 
-Notice, that due to the new auxiliary variables, for a given $i\in S$, none of the variables $x_{i,\tau}$ is used in any constraints outside of $C^0_i$. Therefore, to project $\set{x_{i,\tau}}{\tau\in T}$ from the whole system ($C^0_g\cup_{i'\in S}C^0_{i'}$) we can just eliminate $\set{x_{i,\tau}}{\tau\in T}$ from $C_i^0$ (that is, we keep $\{x_{\tau,i}, w_i\}$), and then add the projection to the other subsystems and the global constraints. And then we can do that for the other subsystems. 
-In the end, when all subsystems $C^0_i$ have been projected, we can join these projections together with $C^0_\trt{g}$ and eliminate the remaining variables, $\set{x'_{i,\tau}}{\tau\in T, i\in S}\cup\set{w_i}{i\in S}$ from this.
-
-
+Notice, that due to the new auxiliary variables, for a given $i\in S$, none of the variables $x_{i,\tau}$ is used in any constraints outside of $S^0_i$. Therefore, to project $\set{x_{i,\tau}}{\tau\in T}$ from the whole system ($S^0_g\cup_{i'\in S}S^0_{i'}$) we can just eliminate $\set{x_{i,\tau}}{\tau\in T}$ from $S_i^0$ (that is, we keep $\{x_{\tau,i}, w_i\}$), and then add the projection to the other subsystems and the global constraints. And then we can do that for the other subsystems. 
+In the end, when all subsystems $S^0_i$ have been projected, we can join these projections together with $S^0_\trt{g}$ and eliminate the remaining variables, $\set{x'_{i,\tau}}{\tau\in T, i\in S}\cup\set{w_i}{i\in S}$ from this.
+\\\\
 \noindent Comparing $\mathfrak{S} \overset{\text{def.}}{=} S_1^0\cup\ldots\cup S_k^0\cup S_\trt{g}^0$ with the original system $S$, all we have done is defining auxiliary variables and substituted them in the system. Thus, eliminating $Y$ from $S$ is equivalent to eliminating $Y \cup Z^0$ from $\mathfrak{S}$. 
 %
 When eliminating $Y\cup Z^0$ from $\mathfrak{S}$, we can choose to first eliminate $X_1\cap Y$, then $X_2\cap Y$ up to $X_k\cap Y$, and finally $Z^0\cup Y\setminus(X_1\cup \ldots\cup X_k)$. 
@@ -308,9 +267,8 @@ The projection of $S$ w.r.t. $Y$ defines the same feasible area as
 the projection of $\mathcal{S}$ w.r.t. $Z^0 \cup Y\setminus (X_1\cup \ldots \cup X_k)$. 
 \end{proposition}
 %
-$\mathcal{S}$ has by construction a block-angular structure and instead of eliminating $Z^0\cup Y\setminus(X_1\cup\ldots\cup X_k)$ immediately, if necessary, we can use the same approach as above to postpone ``mixing'' blocks. %further auxiliary variables to postpone ``mixing'' blocks when eliminating the remaining variables. 
-To do so, we collect all subsystems into $k_1$ small groups %; we have mostly used groups of size 2, 3 or 1\footnote{``Combining'' a single subsystem corresponds to substituting a variable with a new variable, but can be done for convenience of notation.}. 
-and do the following for each group $i$: 
+$\mathcal{S}$ has by construction a block-angular structure and instead of eliminating $Z^0\cup Y\setminus(X_1\cup\ldots\cup X_k)$ immediately, if necessary, we can use the same approach as above to postpone ``mixing'' blocks.
+To do so, we collect all subsystems into $k_1$ small groups and do the following for each group $i$: 
 \begin{itemize}\itemsep0em
 \item We join the systems in the group into a new system, $S^1_i$. For each (rephrased) global inequality $c$ using variables occurring in $S^1_i$, we then define a variable, $z^1_{c,i}$, that equals $S^1_i$'s contribution to $c$. We add the defining equality to $S^1_i$ and rephrase $c$ using $z^1_{c,i}$.
 \item Then we project the resulting system, $S^1_i$, w.r.t. the previous, auxiliary $z^0$-variables, while we keep the newly created $z^1$-variables.
@@ -321,8 +279,8 @@ When we decompose a system as described above, we effectively create a tree stru
 
 \begin{figure}[tb]
 	\centering
-		\includegraphics[scale=0.9]{figures/Example4.pdf}
-	\caption{(a) A system $S$ decomposed into a tree structure of subsystems. (b) Recursive projection of the tree-structure in (a).}
+		\includegraphics[scale=0.9]{figures/Example5.pdf}
+	\caption{(a) A block-angular structured system. (b) Projection using tree-structure.}
 	\label{fig:decomp2}
 \end{figure}
 
@@ -333,17 +291,17 @@ The projection of the system associated with the root of the tree constructed fr
 \end{proposition}
 
 \paragraph{Example}
-Consider the system from the previous example, which was decomposed into the subsystems $C^0_\trt{g}$ and $C^0_i$ for $i\in S$. Instead of projecting these subsystems as described in the previous example, if for examples the constraints in $C^0_\texttt{g}$ uses too many variables, we can insert an additional level in the decomposition. 
-Assume for instance that $S=\{1,2,3,4\}$. Then we can group the four subsystems into two groups, $\{S^0_1, S^0_2\}$ and $\{S^0_3, S^0_4\}$, and for each global constraint, we define a variable stating each new group's contribution to the global constraint. For example, we define a variable $w_{\{1,2\}}$ that is the weight of the containers in section 1 and 2. The defining variables are aded as a new subsystem, and the global constraints are rephrased. I.e. we construct the tree structure in Figure~\ref{fig:decomp2}(a), where 
+Consider the system from the previous example, which was decomposed into the subsystems $S^0_\trt{g}$ and $S^0_i$ for $i\in S$. Instead of projecting these subsystems as described in the previous example, if for examples the constraints in $S^0_\texttt{g}$ uses too many variables, we can insert an additional level in the decomposition. 
+Assume for instance that $S=\{1,2,3,4\}$. Then we can group the four subsystems into two groups, $\{S^0_1, S^0_2\}$ and $\{S^0_3, S^0_4\}$, and for each global constraint, we define a variable stating each new group's contribution to the global constraint. For example, we define a variable $w_{\{1,2\}}$ that is the weight of the containers in section 1 and 2. The defining variables are added as a new subsystem, and the global constraints are rephrased. That is, we construct the subsystems %I.e. we construct the tree structure in Figure~\ref{fig:decomp2}(a), where 
 \footnotesize{
 \[
 \begin{gathered}
-C_\trt{g}^1 :\{ x^\tau = x'_{\{1,2\}} + x'_{\{3,4\}},\: w_{\{1,2\}} + w_{\{3,4\}} \leq D \},\\   
-C^1_1				:\{ x'_{\{1,2\}} = x'_{1} + x'_{2},\: w_{\{1,2\}} = w_{1} + w_{2}\},\:
-C^1_2				:\{ x'_{\{3,4\}} = x'_{3} + x'_{4},\: w_{\{3,4\}} = w_{3} + w_{4}\}. 
+S_\trt{g}^1 :\{ x^\tau = x'_{\{1,2\}} + x'_{\{3,4\}},\: w_{\{1,2\}} + w_{\{3,4\}} \leq D \},\\   
+S^1_1				:\{ x'_{\{1,2\}} = x'_{1} + x'_{2},\: w_{\{1,2\}} = w_{1} + w_{2}\},\:
+S^1_2				:\{ x'_{\{3,4\}} = x'_{3} + x'_{4},\: w_{\{3,4\}} = w_{3} + w_{4}\}. 
 \end{gathered}
 \]}
-\normalsize{The projection of the original VSM is now made by projecting the root of the tree recursively as shown in Figure~\ref{fig:decomp2}(b).}[skal så laves om, men jeg har ikk elige fontene]
+\normalsize{These systems compose a tree structure, whose root is projected recursively as shown in Figure~\ref{fig:decomp2}(b) to obtain the projection of the original VSM.}
 \\\\
 Using our previously described projection method, we obtain the projection of $S$ w.r.t. $Y$ by calling \Call{ProjectNode}{root of $T$}, where $T$ is the tree structure constructed from $S$ and $Y$, and \Call{ProjectNode}{} is described in Algorithm~\ref{alg:decomp}. We note that due to the elimination of almost redundant inequalities, this only approximates the projection. However, by setting $\epsilon = 0$, the algorithm indeed returns the correct projection.
 
@@ -551,24 +509,26 @@ This is not as big a reduction as for the VSMs, however, the unprojected models 
 \end{figure}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%\section{Related Work}
+\section{Related Work}
 %\label{sec:related}
 % Vi ska da også lige nævne vores eget
 %Previous work has contributed frameworks for automated stowage planning (e.g., \cite{roach00,kimkang02,ambrosino04,low09,delgado09,pacino12}, and recently, linear stowage planning models were shown to scale to large container vessels (\cite{pacino11,AlbertosThesis}). These latter models embed an accurate capacity model, but since they specify the exact positions of the containers, they are too large for use as capacity models in uptake-, capacity-, fleet-, and network management, since these tasks often require several hundred capacity models to be solved simultaneously.  
 
-%Other FME-based frameworks for projection includes \cite{simon05,lukatskii08,shapot12}. 
-%Similar to our framework, these use simplifications, redundancy removal and approximation-procedures. For the latter, \cite{simon05} use the extreme-point method of \cite{huynh92}, while the boundary-approximation of \cite{lukatskii08,shapot12} involves a successive increase of the allowable deviation from the feasible area and a permissible maximal ratio of removed non-redundant inequalities.
-%Seen from the perspective of capacity models, both frameworks are used on quite small systems. Furthermore, the systems in \cite{simon} are also sparse. %The framework of \cite{simon05} is used on quite small and sparse systems, and the authors of \cite{lukatskii08,shapot12} performs tests with sizes between $81$ inequalities and $40$ variables to $201$ inequalities and $100$ variables.
+Other FME-based frameworks for projection includes \cite{simon05,lukatskii08,shapot12}. 
+Similar to our framework, these use simplifications, redundancy removal and approximation-procedures. For the latter, \cite{simon05} use the extreme-point method of \cite{huynh92}, while the boundary-approximation of \cite{lukatskii08,shapot12} involves a successive increase of the allowable deviation from the feasible area and a permissible maximal ratio of removed non-redundant inequalities.
+Seen from the perspective of capacity models, both frameworks are used on quite small systems. Furthermore, the systems in \cite{simon} are also sparse. %The framework of \cite{simon05} is used on quite small and sparse systems, and the authors of \cite{lukatskii08,shapot12} performs tests with sizes between $81$ inequalities and $40$ variables to $201$ inequalities and $100$ variables.
 %%These, however, only operate on what in our domain would be considered quite small systems. 
-%Our FME-based framework is to our knowledge the first that can take advantage of block-angular structure in the system.
+Our FME-based framework is to our knowledge the first that can take advantage of block-angular structure in the system.
 
 %Particularly within linear programming, work has also been done in the area of classifying and removing redundant inequalities in a inequality system as well as finding implicit equalities, e.g. \cite{telgen83,lassez93,karwan83,andersen95,mattheiss73,brearley75,maros} to name a few. %de sidste to er nogen, vi har brugt og nævnt før
 %Many of these are not applicable for us, since they eg. are to be performed within the simplex procedure or use an optimal extreme point. %However, we have used know methods for our preprocessing, eg. \cite{andersen95,brearley75,maros} in our preprocessing and clean-up method.
 
-%Other methods exist for computing the projection of a feasible area of an (in)equality system, that are not based on FME. The method in \cite{huynh92} finds extreme points in the projection space incrementally. It can therefore also be used to approximate the projection as is done in \cite{simon05}. It is recommended for dense systems. %Another method based on \cite{lassezlassez} is described in \cite{huynh92}, where the projection is computed by successive refinements of an initial approximation of the projection. According to the authors, the complexity of their algorithm ``depends essentially on the dimension of the projection of the output not the size of the input'' \cite{huynh92}, and could therefore be an interesting alternative to Fourier-Motzkin-elimination in a case like the one we consider. 
-%Another example is the method introduced in \cite{jones04}, which computes all facets of the projection iteratively using a face-lattice. 
-%This method is recommended by the authors for polytopes with a low facet count and a high vertex count.
+Other methods exist for computing the projection of a feasible area of an (in)equality system, that are not based on FME. The method in \cite{huynh92} finds extreme points in the projection space incrementally. It can therefore also be used to approximate the projection as is done in \cite{simon05}. It is recommended for dense systems. %Another method based on \cite{lassezlassez} is described in \cite{huynh92}, where the projection is computed by successive refinements of an initial approximation of the projection. According to the authors, the complexity of their algorithm ``depends essentially on the dimension of the projection of the output not the size of the input'' \cite{huynh92}, and could therefore be an interesting alternative to Fourier-Motzkin-elimination in a case like the one we consider. 
+Another example is the method introduced in \cite{jones04}, which computes all facets of the projection iteratively using a face-lattice. 
+This method is recommended by the authors for polytopes with a low facet count and a high vertex count.
 
+\color{red}{Note: Jeg har skåret lidt fra om forskellen til de to frameworks. Jeg har slettet en ``anden metode til projection'', fordi jeg pludselig blev i tvivl om ikke det bare er det samme som den første, jeg nævner}
+\color{black}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{Conclusion}\label{sec:conclusion}
 For a liner shipping company, accurate capacity models that succinctly represent the trade-off between the different types of containers are important in many areas such as uptake management, capacity management, network management, and fleet management. Although previous work on stowage models in principle provide fine-grained capacity models, they cannot readily be used in practice as such, since they are too large.
