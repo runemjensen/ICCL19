@@ -70,10 +70,11 @@ Our experimental results then follows in Section~\ref{sec:results}. Section~\ref
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{Vessel Stowage Model}\label{sec:model}
 
-A Vessel Stowage Model (VSM) is a set linear inequalities over continuous decision variables (i.e., a polyhedron) defining feasible stowage conditions of a container vessel. It is based on our previous work on mathematical programming models for master stowage planning [ICCL11, 12 mm]. 
+A Vessel Stowage Model (VSM) is a set of linear inequalities over continuous decision variables (i.e., a polyhedron) defining feasible stowage conditions of a container vessel. The VSMs in this work is based on our previous work on mathematical programming models for master stowage planning [ICCL11, 12 mm]. 
 
 Consider the container vessel shown in Figure~\ref{fig:vessel}. Each \emph{cell} on the vessel can hold two 20' containers or one 40'. Some cells have power plugs, allowing refrigerated containers (\emph{reefers}) to be stowed. Each container stack rests on sockets with maximum weight limits. Stacks are arranged longitudinal in \emph{bays} that can be further subdivided into \emph{locations}. The volume capacity of a vessel is measured in Twenty-foot Equivalent Units (TEUs) and can be more than 20K. Stowage conditions must satisfy a large number of interacting requirements. The vessel must be seaworthy with proper transversal stability and stress forces within limits. To that end, it can fill large water ballast tanks to achieve stability. The container stacks must by physically possible (e.g., 20' containers cannot be stowed on top of 40' containers) and there are separation rules for dangerous cargo. For an in-depth coverage of container vessel stowage, we refer the reader to a recent book on the topic [SSS].     
-\begin{figure}[h!]
+
+\begin{figure}[tb]
 	\centering
 		\includegraphics{figures/vessel4.pdf}
 	\caption{Vessel structure and reference points.}

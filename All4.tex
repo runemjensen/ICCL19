@@ -217,12 +217,19 @@ Methods for coarsening the boundary of the feasible area that relies on removing
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \subsection{Decomposing block-angular structured system}\label{sec:decomp}
-In the following we will describe how the block-angular structure of a system can be exploited to make our projection framework scale. Detailed pseudocode and correctness proofs can be found in \cite{MyTechRep}. 
+Looking at the simplified VSM from Section~\ref{sec:model}, it is clear that this has a natural (primal) block-angular structure (\cite{williams}): The set of capacity constraints for section $i\in S$ constitutes a local system, $S_i$ whose constraints only use variables that are not used in $S_{i'}$ for a different section $i'$. The remaining constraints make up the global subsystem, $S_\texttt{g}$, where the constraints also use variables from several of the local subsystems. This structure is illustrated in Figure~\ref{fig:decomp2}(a) for a VSM with four sections. 
 
-The constraints defining the capacity for a section $i$ can be collected in a \emph{local} subsystem $S_i$, whose constraints only use variables that are not used in $S_{i'}$ for another section $i'$. The remaining constraints make up another \emph{global} subsystem, $S_\texttt{g}$, where the constraints also use variables from several of the local subsystems. That is, the constraints in the VSM have a natural \emph{(primal) block-angular structure} \cite{williams} as depicted in Figure~\ref{fig:decomp2}.
+To obtain a less detailed VCM from this VSM, we want to eliminate all variables but $\set{x^\tau}{\tau\in T}$, the variables counting the number of containers of each type. 
+However, when a variables $x_{i,\tau}$ is eliminated, the inequalities constructed by FME uses variables from all subsystems, since $x_{i,\tau}$ is used in the global constraints. Continuing FME, this result in an increasing number of global and more dense constraints, which again makes FME perform worse. 
+To avoid the immediate ``mix'' of local subsystems, we will exploit the system's block structure and define and use auxiliary variables to ensure that we can project the local subsystems separately without producing global constraints, before we combine the projected subsystems and eliminate the auxiliary variables. 
 
-To obtain a VCM, we want to eliminate all but the variables counting the total number of containers of each type. The variable being eliminated is (with high probability) used in the global constraints, which causes the inequalities constructed by FME to use variables from all subsystems, that is, the local subsystems gets ``mixed''. This result in an increasing number of global and more dense constraints, which again makes FME perform worse. 
-To avoid the immediate mix of variables, we will define and use auxiliary variables to ensure that we can project the local subsystems separately without producing global constraints, before we combine the projected subsystems and eliminate the auxiliary variables. To separate and remove local variables from the global constraints, we do as follows for all subsystems $S_i$.
+For the presented VSM, we first define a variable to hold the weight of cargo in each section $i$, $w_i$. We also define the variable $x'_{i,\tau} = x_{i,\tau}$, although this is only a renaming of the variables at first glance. We add the defining constraints to the relevant local system, and redefine the global constraints in terms of the new variables. 
+That is, the $i$'th local subsystem is now $S_i^0 = S_i \cup \{w_i = \sum_{\tau\in T} W_\tau x_{i,\tau}\} \cup \bigcup_{\tau\in T}\{x'_{i,\tau} = x_{i,\tau}\}$, while the new system of global constraints is $S_g^0 = \cup_{\tau\in T}\{x^\tau = \sum_{i\in S} x'_{i,\tau}\} \cup \{w_1 + w_2 + w_3 + w_4 \leq D\}$. 
+
+Notice, that due to the new auxiliary variables, for a given $i\in S$, none of the variables $x_{i,\tau}$ is used in any constraints outside of $S^0_i$. Therefore, to project $\set{x_{i,\tau}}{\tau\in T}$ from the whole system ($S^0_g\cup_{i'\in S}S^0_{i'}$) we can just eliminate $\set{x_{i,\tau}}{\tau\in T}$ from $S_i^0$ (that is, we keep the $x_{i,\tau}$s and $w_i$s), and then add the projection to the other subsystems and the global constraints. And then we can do that for the other subsystems. 
+In the end, when all subsystems $S^0_i$ have been projected, we can join these projections together with $S^0_\trt{g}$ and eliminate the remaining variables, $\set{x'_{i,\tau}}{\tau\in T, i\in S}\cup\set{w_i}{i\in S}$, from this.
+\\\\
+More formally, for a block-angular structured system with local sybsystems $S_1,\ldots, S_k$ (using the variables $X_1,\ldots, X_k$) and global subsystem $S_\texttt{g}$, to separate and remove local variables from the global constraints, we do as follows for all subsystems $S_i$. Detailed pseudocode and correctness proofs can be found in \cite{MyTechRep}. 
 
 \begin{itemize}\itemsep0em
 \item For each global constraint $c$ using variables in $S_i$, we define an auxiliary variable $z^0_{c,i}$ that equals the variables in $S_i$'s contribution to $c$. We add the equality defining $z^0_{c,i}$ to $S_i$, and we substitute with it in $c$. 
@@ -234,32 +241,7 @@ After projecting each $S_i^0$ we can then combine the results with the rephrased
 \mathcal{S} = S^0_\trt{g} \cup S'^{\,0}_1\cup \ldots \cup S'^{\,0}_k$.
 We can then eliminate from $\mathcal{S}$ all the auxiliary $z^0$-variables, $Z^0$, plus any remaining variables in $Y$. 
 
-\paragraph{Example}
-As an example, we consider an extremely simplified VSM consisting of the constraints indicating the capacities for each section $i\in S$, constraints that counts the total of each type $\tau\in T$, and a constraint that limits the total weight of cargo. That is, the constraint system is:
-\begin{numcases}{S_\texttt{g}:}
-x_\tau = \sum_{i\in S} x_{i,\tau} & $\forall{\tau \in T}$\label{eq:sumT}\\
-\sum_{i\in S}\sum_{\tau\in T}W^\tau x_{i,\tau} \leq D\label{eq:sumW}
-\end{numcases}
-\begin{numcases}{S_i\text{ for all }i\in S:} 
-		\smashoperator[lr]{\sum_{\tau \in T^\trt{20}}} x_{i,\tau} \leq C_i^\trt{20} 	 
-				& $\smashoperator[lr]{\sum_{\tau \in T^\trt{20}}} W_\tau x_{i,\tau} \leq C_i^\trt{W20}$ \label{eq:cap20}\\
-		\;\smashoperator[lr]{\sum_{\;\tau \in T\setminus T^\trt{20}}} 2 x_{i,\tau} \leq C_i^\trt{40}
-				& $\smashoperator[lr]{\sum_{\tau \in T^\trt{20}}}0.5 W_\tau x_{i,\tau} + \smashoperator[lr]{\sum_{\tau \in T\setminus \in T^\trt{20}}} W_\tau  x_{i,\tau} \leq C_i^\trt{W40}$ \label{eq:cap40}\\ 
-			\smashoperator[r]{\sum_{\tau \in T^\trt{R}}} x_{i,\tau} \leq C_i^\trt{RS}
-				& $\smashoperator[lr]{\sum_{\tau \in T^\trt{R}\cap T^\trt{20}}} 0.5 x_{i,\tau} + \smashoperator[lr]{\sum_{\tau \in T^\trt{R}\setminus T^\trt{20}}} x_{i,\tau} \leq C_i^\trt{RC}$\label{eq:capReefer}\\ 
-				& $\smashoperator[lr]{\sum_{\tau \in T^\trt{20}}} x_{i,\tau} + 2\smashoperator[lr]{\sum_{\tau \in T\setminus T^\trt{20}}} x_{i,\tau} \leq C_i^\trt{TEU}$\label{eq:capTEU}
-\end{numcases}
-
-This is naturally block-angular structured since each $S_i$ constitutes a local system, while the remaining constraints, $S_\texttt{g}$, makes up the global constraints.  
-
-To obtain a less detailed VCM from this VSM, we want to eliminate all variables but $\set{x^\tau}{\tau\in T}$. 
-To exploit the structure of the system, we first define a variable to hold the weight of cargo in each section $i$, $w_i$. We also define the variable $x'_{i,\tau} = x_{i,\tau}$, although this is only a renaming of the variables at first glance. We add the defining constraints to the relevant local system, and redefine the global constraints in terms of the new variables. 
-That is, the $i$'th local subsystem is now $S_i^0 = S_i \cup \{w_i = \sum_{\tau\in T} W^\tau x_{i,\tau}\} \cup \bigcup_{\tau\in T}\{x'_{i,\tau} = x_{i,\tau}\}$, while the new system of global constraints is $S_g^0 = \cup_{\tau\in T}\{x^\tau = \sum_{i\in S} x'_{i,\tau}\} \cup \{w_1 + w_2 + w_3 + w_4 \leq D\}$. 
-
-Notice, that due to the new auxiliary variables, for a given $i\in S$, none of the variables $x_{i,\tau}$ is used in any constraints outside of $S^0_i$. Therefore, to project $\set{x_{i,\tau}}{\tau\in T}$ from the whole system ($S^0_g\cup_{i'\in S}S^0_{i'}$) we can just eliminate $\set{x_{i,\tau}}{\tau\in T}$ from $S_i^0$ (that is, we keep $\{x_{i,\tau}, w_i\}$), and then add the projection to the other subsystems and the global constraints. And then we can do that for the other subsystems. 
-In the end, when all subsystems $S^0_i$ have been projected, we can join these projections together with $S^0_\trt{g}$ and eliminate the remaining variables, $\set{x'_{i,\tau}}{\tau\in T, i\in S}\cup\set{w_i}{i\in S}$ from this.
-\\\\
-\noindent Comparing $\mathfrak{S} \overset{\text{def.}}{=} S_1^0\cup\ldots\cup S_k^0\cup S_\trt{g}^0$ with the original system $S$, all we have done is defining auxiliary variables and substituted them in the system. Thus, eliminating $Y$ from $S$ is equivalent to eliminating $Y \cup Z^0$ from $\mathfrak{S}$. 
+Comparing $\mathfrak{S} \overset{\text{def.}}{=} S_1^0\cup\ldots\cup S_k^0\cup S_\trt{g}^0$ with the original system $S$, all we have done is defining auxiliary variables and substituted them in the system. Thus, eliminating $Y$ from $S$ is equivalent to eliminating $Y \cup Z^0$ from $\mathfrak{S}$. 
 %
 When eliminating $Y\cup Z^0$ from $\mathfrak{S}$, we can choose to first eliminate $X_1\cap Y$, then $X_2\cap Y$ up to $X_k\cap Y$, and finally $Z^0\cup Y\setminus(X_1\cup \ldots\cup X_k)$. 
 Any variable in $X_1\cap Y$ has a zero-coefficient in all constraints outside $S^0_1$, so $\mathfrak{S}\setminus S^0_1$ will not be changed by FME when $X_1\cap Y$ is eliminated. It can therefore be put aside until that projection is done. 
@@ -294,7 +276,7 @@ The projection of the system associated with the root of the tree constructed fr
 \end{proposition}
 
 \paragraph{Example}
-Consider the system from the previous example, which was decomposed into the subsystems $S^0_\trt{g}$ and $S^0_i$ for $i\in S$. Instead of projecting these subsystems as described in the previous example, if for examples the constraints in $S^0_\texttt{g}$ uses too many variables, we can insert an additional level in the decomposition. 
+Consider again the VSM that was decomposed into the subsystems $S^0_\trt{g}$ and $S^0_i$ for $i\in S$. Instead of projecting these subsystems as described in the start of this section, we can insert an additional level in the decomposition, if for examples the constraints in $S^0_\texttt{g}$ uses too many variables. 
 Assume for instance that $S=\{1,2,3,4\}$. Then we can group the four subsystems into two groups, $\{S^0_1, S^0_2\}$ and $\{S^0_3, S^0_4\}$, and for each global constraint, we define a variable stating each new group's contribution to the global constraint. For example, we define a variable $w_{\{1,2\}}$ that is the weight of the containers in section 1 and 2. The defining variables are added as a new subsystem, and the global constraints are rephrased. That is, we construct the subsystems %I.e. we construct the tree structure in Figure~\ref{fig:decomp2}(a), where 
 \footnotesize{
 \[
