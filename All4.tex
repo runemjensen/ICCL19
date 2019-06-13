@@ -8,6 +8,7 @@
 \usepackage{amsmath}
 \usepackage{amsfonts}
 \usepackage{xcolor}
+\usepackage{cases}
 
 \DeclareMathSymbol{\shortminus}{\mathbin}{AMSa}{"39}
 \newcommand{\var}{\mathit{var}}
@@ -235,25 +236,27 @@ We can then eliminate from $\mathcal{S}$ all the auxiliary $z^0$-variables, $Z^0
 
 \paragraph{Example}
 As an example, we consider an extremely simplified VSM consisting of the constraints indicating the capacities for each section $i\in S$, constraints that counts the total of each type $\tau\in T$, and a constraint that limits the total weight of cargo. That is, the constraint system is:
-\begin{align*}
-S_i \text{ for all }i\in S&: \left\{ \begin{array}{ll}
-		\smashoperator[r]{\sum_{\tau \in T^\trt{20}}} x_{i,\tau} \leq C_i^\trt{20} 									& \quad\smashoperator[r]{\sum_{\tau \in T^\trt{20}}} W_\tau\cdot x_{l,\tau} \leq C_l^\trt{W20}\\
-		\smashoperator[r]{\sum_{\tau \in T\setminus T^\trt{20}}} 2\cdot x_{i,\tau} \leq C_l^\trt{40}& \quad 0.5 \smashoperator[lr]{\sum_{\tau \in T^\trt{20}}} W_\tau\cdot x_{l,\tau} + \smashoperator[lr]{\sum_{\tau \in T\setminus \in T^\trt{20}}} W_\tau\cdot x_{l,\tau} \leq C_l^\trt{W40} \\
-		\smashoperator[r]{\sum_{\tau \in T^\trt{R}}} x_{l,\tau} \leq C_l^\trt{RS}										& \quad \smashoperator[lr]{\sum_{\tau \in T^\trt{R}\cap T^\trt{20}}} 0.5\cdot x_{l,\tau} + \smashoperator[lr]{\sum_{\tau \in T^\trt{R}\setminus T^\trt{20}}} x_{l,\tau} \leq C_l^\trt{RC}\\ 
-		&\quad \smashoperator[r]{\sum_{\tau \in T^\trt{20}}} x_{l,\tau} + 2\cdot\smashoperator[lr]{\sum_{\tau \in T\setminus T^\trt{20}}} x_{l,\tau} \leq C_l^\trt{TEU}
-\end{array}\right.\\
-S_\texttt{g} &: \left\{ \begin{array}{ll} 
-			x_\tau = \sum_{i\in S} x_{i,\tau} & \forall{\tau \in T}\\		
-			\sum_{i\in S}\sum_{\tau\in T}W^\tau x_{i,\tau} \leq D
-\end{array}\right.
-\end{align*}
+\begin{numcases}{S_\texttt{g}:}
+x_\tau = \sum_{i\in S} x_{i,\tau} & $\forall{\tau \in T}$\label{eq:sumT}\\
+\sum_{i\in S}\sum_{\tau\in T}W^\tau x_{i,\tau} \leq D\label{eq:sumW}
+\end{numcases}
+\begin{numcases}{S_i\text{ for all }i\in S:} 
+		\smashoperator[lr]{\sum_{\tau \in T^\trt{20}}} x_{i,\tau} \leq C_i^\trt{20} 	 
+				& $\smashoperator[lr]{\sum_{\tau \in T^\trt{20}}} W_\tau x_{i,\tau} \leq C_i^\trt{W20}$ \label{eq:cap20}\\
+		\;\smashoperator[lr]{\sum_{\;\tau \in T\setminus T^\trt{20}}} 2 x_{i,\tau} \leq C_i^\trt{40}
+				& $\smashoperator[lr]{\sum_{\tau \in T^\trt{20}}}0.5 W_\tau x_{i,\tau} + \smashoperator[lr]{\sum_{\tau \in T\setminus \in T^\trt{20}}} W_\tau  x_{i,\tau} \leq C_i^\trt{W40}$ \label{eq:cap40}\\ 
+			\smashoperator[r]{\sum_{\tau \in T^\trt{R}}} x_{i,\tau} \leq C_i^\trt{RS}
+				& $\smashoperator[lr]{\sum_{\tau \in T^\trt{R}\cap T^\trt{20}}} 0.5 x_{i,\tau} + \smashoperator[lr]{\sum_{\tau \in T^\trt{R}\setminus T^\trt{20}}} x_{i,\tau} \leq C_i^\trt{RC}$\label{eq:capReefer}\\ 
+				& $\smashoperator[lr]{\sum_{\tau \in T^\trt{20}}} x_{i,\tau} + 2\smashoperator[lr]{\sum_{\tau \in T\setminus T^\trt{20}}} x_{i,\tau} \leq C_i^\trt{TEU}$\label{eq:capTEU}
+\end{numcases}
+
 This is naturally block-angular structured since each $S_i$ constitutes a local system, while the remaining constraints, $S_\texttt{g}$, makes up the global constraints.  
 
 To obtain a less detailed VCM from this VSM, we want to eliminate all variables but $\set{x^\tau}{\tau\in T}$. 
 To exploit the structure of the system, we first define a variable to hold the weight of cargo in each section $i$, $w_i$. We also define the variable $x'_{i,\tau} = x_{i,\tau}$, although this is only a renaming of the variables at first glance. We add the defining constraints to the relevant local system, and redefine the global constraints in terms of the new variables. 
-That is, the $i$'th local subsystem is now $S_i^0 = S_i \cup \{w_i = \sum_{\tau\in T} W^\tau x_{\tau,i}\} \cup \bigcup_{\tau\in T}\{x'_{i,\tau} = x_{i,\tau}\}$, while the new system of global constraints is $S_g^0 = \cup_{\tau\in T}\{x^\tau = \sum_{i\in S} x'_{i,\tau}\} \cup \{w_1 + w_2 + w_3 + w_4 \leq D\}$. 
+That is, the $i$'th local subsystem is now $S_i^0 = S_i \cup \{w_i = \sum_{\tau\in T} W^\tau x_{i,\tau}\} \cup \bigcup_{\tau\in T}\{x'_{i,\tau} = x_{i,\tau}\}$, while the new system of global constraints is $S_g^0 = \cup_{\tau\in T}\{x^\tau = \sum_{i\in S} x'_{i,\tau}\} \cup \{w_1 + w_2 + w_3 + w_4 \leq D\}$. 
 
-Notice, that due to the new auxiliary variables, for a given $i\in S$, none of the variables $x_{i,\tau}$ is used in any constraints outside of $S^0_i$. Therefore, to project $\set{x_{i,\tau}}{\tau\in T}$ from the whole system ($S^0_g\cup_{i'\in S}S^0_{i'}$) we can just eliminate $\set{x_{i,\tau}}{\tau\in T}$ from $S_i^0$ (that is, we keep $\{x_{\tau,i}, w_i\}$), and then add the projection to the other subsystems and the global constraints. And then we can do that for the other subsystems. 
+Notice, that due to the new auxiliary variables, for a given $i\in S$, none of the variables $x_{i,\tau}$ is used in any constraints outside of $S^0_i$. Therefore, to project $\set{x_{i,\tau}}{\tau\in T}$ from the whole system ($S^0_g\cup_{i'\in S}S^0_{i'}$) we can just eliminate $\set{x_{i,\tau}}{\tau\in T}$ from $S_i^0$ (that is, we keep $\{x_{i,\tau}, w_i\}$), and then add the projection to the other subsystems and the global constraints. And then we can do that for the other subsystems. 
 In the end, when all subsystems $S^0_i$ have been projected, we can join these projections together with $S^0_\trt{g}$ and eliminate the remaining variables, $\set{x'_{i,\tau}}{\tau\in T, i\in S}\cup\set{w_i}{i\in S}$ from this.
 \\\\
 \noindent Comparing $\mathfrak{S} \overset{\text{def.}}{=} S_1^0\cup\ldots\cup S_k^0\cup S_\trt{g}^0$ with the original system $S$, all we have done is defining auxiliary variables and substituted them in the system. Thus, eliminating $Y$ from $S$ is equivalent to eliminating $Y \cup Z^0$ from $\mathfrak{S}$. 
