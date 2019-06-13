@@ -8,6 +8,7 @@
 \usepackage{amsmath}
 \usepackage{amsfonts}
 \usepackage{xcolor}
+\usepackage{cases}
 
 \DeclareMathSymbol{\shortminus}{\mathbin}{AMSa}{"39}
 \newcommand{\var}{\mathit{var}}
@@ -152,9 +153,40 @@ At the top-level, the pseudocode for our projection method is thus as described 
 \EndFunction
 \end{algorithmic}
 \end{algorithm}
-Each sub-procedure in this algorithm is detailed further below. We start with the methods for variable elimination, before we describe the redundancy removal and finally the preprocessing step. 
+Each sub-procedure in this algorithm is detailed further below. 
 
-\paragraph{Fourier-Motzkin-elimination} 
+\paragraph{{Preprocess}}
+Prior to the projection, we perform some simple preprocessing steps repeatedly as long as a reduction happens. For this, we maintain an upper and lower bound for each variable and each constraint's left-hand-side. 
+The bounds of a constraint is linked to the bounds of the variables it uses, so tightening a bound of a variable or constraint can imply a tightening of another bound. 
+
+The steps are implemented with special care of equalities and working with the assumption that the system is feasible (details can be found in \cite{MyTechRep}).
+Besides updating bounds, we remove all empty inequalities and unused variables $x\in Y$.  
+%
+If the upper and lower bounds of a constraint (or variable) are equal, each of the used variables are substituted with its upper or lower bound that results in the constraint's bound. 
+
+%
+We remove a constraint $\ve{a}\cdot \ve{x} \leq b$ if its upper bound 
+is less or equal to $b$. 
+If the same is true for an equality $\ve{a}\cdot \ve{x}=b$, due to the feasibility assumption, the variables used in $c$ are substituted with the bounds that makes $\ve{a}\cdot \ve{x}$ equal $b$. 
+
+If $\Neg_S(x)=\emptyset$ for an $x\in Y$ 
+then we remove all constraints in $\Pos_S(x)$. If $\Neg_S(x)$ only consist of the inequality defining the lower bound of $x$, $-x\leq -lb_x$, then we substitute $x$ with $lb_x$ in all constraints. Similarly w.r.t. $\Pos_S(x)$. We notice that this is \emph{not} a normal preprocessing step, but corresponds to making a FME on $x$, and this changes the feasible area of $S$. 
+
+Comparing two constraints $c$ and $c'$ syntactically, we can in some cases detect redundancy. 
+If $c:\ve{a}\cdot \ve{x}\otimes b$ and $c': \ve{a}'\cdot \ve{x}\otimes' b'$ (where $\otimes,\otimes'\in\{\leq,=\}$), the following holds.
+\begin{itemize} \itemsep0em 
+\setcounter{enumi}{\value{counterName}}
+\item 
+If $\ve{a}=\sigma\cdot \ve{a}'$, then $c$ and $c'$ are \emph{linearly dependent} (\cite{lassez93}). Hence, $c$ is redundant if
+it is an \underline{in}equality and $\sigma\cdot b'\leq b$ and either: $\sigma\geq 0$; or $\sigma<0$ and $c'$ is an equality. $c$ is also redundant if both $c$ and $c'$ are equalities and $\sigma\cdot b'\leq b$. 
+\item
+If all variables used in $c$ and $c'$ are non-negative, and there exists a $\sigma\geq 0$ such that $a_x \leq \sigma \cdot a'_x$ for all $x$, while $\sigma\cdot b' \leq b$, then $c$ is \emph{less strict} than $c'$; it is redundant and hence removed. If $c$ is an equality, so must $c'$ be, and hence $c'$ is turned into an equality. 
+\end{itemize} 
+
+\paragraph{Gauss-elim} 
+An equality $e$ can be used to isolate a variable $x\in Y$ which can then be substituted in all other constraints in $S$ (a Gauss-elimination). This eliminates $x$ from the system and does not cause the same combinatorial explosion of inequalities as FME may do (e.g., \cite{duffin74,simon05}). Before performing FME we therefore do as many Gauss-elimination of variables in $Y$ as possible. To avoid density, when the system $S$ contains several equalities, we first choose the variable $x$ (used in any equality) that is used the fewest times in total in $S$. We then choose the equation $e$ among those using $x$ that uses the fewest variables, and do Gauss-elimination of $x$ using $e$. This is then repeated until there are no more equalities using variables from $Y$.
+
+\paragraph{FME-SingleVar} 
 Fourier-Motzkin Elimination (FME) is a classical algorithm for producing the projection of a set of variables from an inequality system, i.e. a constraint system with no equalities. The method successively eliminates one variable $x\in Y$ until all required variables have been eliminated. To eliminate $x\in Y$, the constraints in $S$ are first divided into sets, $\Pos_S(x)$, $\Neg_S(x)$, and $\mi{Zero}_S(x)$ depending on the sign of $x$'s coefficient. 
 Each equality is treated as two inequalities, and bounds are treated as any other inequalities. 
 A new system $S'$ is then created, which is the projection of $S$ w.r.t. $\{x\}$. It consists of $\mi{Zero}_S(x)$, together with one inequality, $i_{p,n,x}$, for each pair $(p,n)\in \Pos_S(x)\times \Neg_S(x)$. $i_{p,n,x}$ is the addition of positive multiples of $p:\ve{a}\cdot\ve{x} \leq b$ and $n:\ve{a}'\cdot\ve{x} \leq b'$ such that the coefficient of $x$ in the resulting inequality is $0$, i.e.
@@ -164,10 +196,7 @@ i_{p,n,x}: -a'_x\cdot \ve{a}\cdot\ve{x} + a_x\cdot \ve{a}'\cdot\ve{x} \leq -a'_x
 The order in which variables are eliminated naturally influences the size of the intermediary inequality systems. We have chosen to use the greedy heuristic {that minimizes the number of new inequalities in the immediately next system \cite{duffin74}}, which is a commonly used heuristic. It is easily calculated from the current system as the variable $x\in Y$ that minimizes $|\Pos_S(x)||\Neg_S(x)| - |\Pos_S(x)|-|\Neg_S(x)|$.  In the worst case scenario, %where $|\Pos_S(x)| = |\Neg_S(x)| = \frac{|S|}{2}$ for all $x\in Y$, 
 the number of inequalities in the created system $S'$ is $\frac{1}{4}|S|^2$, which implies that (both time and space) complexity is double-exponential. For a large, dense system, the growth will be substantial, which prohibits it from use for practical purposes \emph{if} the added inequalities are non-redundant or the non-redundant inequalities are not removed ({see e.g. \cite{lassez93} and \cite{lukatskii08}}). It should, however, also be emphasized that not all inequalities in the succeeding system are necessarily non-redundant; in fact, the number of non-redundant inequalities will at most grow exponentially \cite{monniaux10}.
 
-\paragraph{Gauss-elimination} 
-An equality $e$ can be used to isolate a variable $x\in Y$ which can then be substituted in all other constraints in $S$ (a Gauss-elimination). This eliminates $x$ from the system and does not cause the same combinatorial explosion of inequalities as FME may do (e.g., \cite{duffin74,simon05}). Before performing FME we therefore do as many Gauss-elimination of variables in $Y$ as possible. To avoid density, when the system $S$ contains several equalities, we first choose the variable $x$ (used in any equality) that is used the fewest times in total in $S$. We then choose the equation $e$ among those using $x$ that uses the fewest variables, and do Gauss-elimination of $x$ using $e$. This is then repeated until there are no more equalities using variables from $Y$.
-
-\paragraph{Redundancy removal} 
+\paragraph{RemoveRedundancy} 
 To detect redundancy, we examine each inequality $c: \ve{a}\cdot \ve{x}\leq b$ in turn and remove it from the system if $\max \ve{a}\cdot \ve{x}$ subject to $S\setminus\{c\}$ is less than or equal to $b$. The property can be checked using an LP solver. Only \underline{in}equalities are examined, since we want to keep the equalities for use in Gauss-elimination. Not all inequalities have to be examined, though. When removing redundancy after projecting $x$ from $S$ we do not need to check inequalities in $\mi{Zero}_S(x)$; if they were non-redundant before the elimination, they will be non-redundant after.
 
 For large systems, checking all constraints for redundancy is time-consuming. We have therefore implemented a method for redundancy removal that uses several threads in parallel. Each thread checks one inequality at a time, while a manager takes care of the communication and keeps track of the found redundant inequalities. 
@@ -186,34 +215,6 @@ This \emph{cannot} be done in parallel. Otherwise, both $c$ and $c'$ in Figure~\
 
 Methods for coarsening the boundary of the feasible area that relies on removing almost redundant inequalities are also used in \cite{lukatskii08} and \cite{shapot12}, though their approaches are different.
 
-\paragraph{Preprocessing}
-Prior to the projection, we perform some simple preprocessing steps repeatedly as long as a reduction happens. For this, we maintain an upper and lower bound for each variable and each constraint's left-hand-side. 
-The bounds of a constraint is linked to the bounds of the variables it uses, so tightening a bound of a variable or constraint can imply a tightening of another bound. 
-
-The steps are implemented with special care of equalities and working with the assumption that the system is feasible (details can be found in \cite{MyTechRep}).
-Besides updating bounds, we remove all empty inequalities and unused variables $x\in Y$.  
-%
-If the upper and lower bounds of a constraint (or variable) are equal, each of the used variables are substituted with its upper or lower bound that results in the constraint's bound. 
-
-%
-We remove a constraint $\ve{a}\cdot \ve{x} \leq b$ if its upper bound 
-is less or equal to $b$. 
-If the same is true for an equality $\ve{a}\cdot \ve{x}=b$, due to the feasibility assumption, the variables used in $c$ are substituted with the bounds that makes $\ve{a}\cdot \ve{x}$ equal $b$. 
-
-
-If $\Neg_S(x)=\emptyset$ for an $x\in Y$ 
-then we remove all constraints in $\Pos_S(x)$. If $\Neg_S(x)$ only consist of the inequality defining the lower bound of $x$, $-x\leq -lb_x$, then we substitute $x$ with $lb_x$ in all constraints. Similarly w.r.t. $\Pos_S(x)$. We notice that this is \emph{not} a normal preprocessing step, but corresponds to making a FME on $x$, and this changes the feasible area of $S$. 
-
-Comparing two constraints $c$ and $c'$ syntactically, we can in some cases detect redundancy. 
-If $c:\ve{a}\cdot \ve{x}\otimes b$ and $c': \ve{a}'\cdot \ve{x}\otimes' b'$ (where $\otimes,\otimes'\in\{\leq,=\}$), the following holds.
-\begin{itemize} \itemsep0em 
-\setcounter{enumi}{\value{counterName}}
-\item 
-If $\ve{a}=\sigma\cdot \ve{a}'$, then $c$ and $c'$ are \emph{linearly dependent} (\cite{lassez93}). Hence, $c$ is redundant if
-it is an \underline{in}equality and $\sigma\cdot b'\leq b$ and either: $\sigma\geq 0$; or $\sigma<0$ and $c'$ is an equality. $c$ is also redundant if both $c$ and $c'$ are equalities and $\sigma\cdot b'\leq b$. 
-\item
-If all variables used in $c$ and $c'$ are non-negative, and there exists a $\sigma\geq 0$ such that $a_x \leq \sigma \cdot a'_x$ for all $x$, while $\sigma\cdot b' \leq b$, then $c$ is \emph{less strict} than $c'$; it is redundant and hence removed. If $c$ is an equality, so must $c'$ be, and hence $c'$ is turned into an equality. 
-\end{itemize} 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \subsection{Decomposing block-angular structured system}\label{sec:decomp}
 In the following we will describe how the block-angular structure of a system can be exploited to make our projection framework scale. Detailed pseudocode and correctness proofs can be found in \cite{MyTechRep}. 
@@ -235,25 +236,27 @@ We can then eliminate from $\mathcal{S}$ all the auxiliary $z^0$-variables, $Z^0
 
 \paragraph{Example}
 As an example, we consider an extremely simplified VSM consisting of the constraints indicating the capacities for each section $i\in S$, constraints that counts the total of each type $\tau\in T$, and a constraint that limits the total weight of cargo. That is, the constraint system is:
-\begin{align*}
-S_i \text{ for all }i\in S&: \left\{ \begin{array}{ll}
-		\smashoperator[r]{\sum_{\tau \in T^\trt{20}}} x_{i,\tau} \leq C_i^\trt{20} 									& \quad\smashoperator[r]{\sum_{\tau \in T^\trt{20}}} W_\tau\cdot x_{l,\tau} \leq C_l^\trt{W20}\\
-		\smashoperator[r]{\sum_{\tau \in T\setminus T^\trt{20}}} 2\cdot x_{i,\tau} \leq C_l^\trt{40}& \quad 0.5 \smashoperator[lr]{\sum_{\tau \in T^\trt{20}}} W_\tau\cdot x_{l,\tau} + \smashoperator[lr]{\sum_{\tau \in T\setminus \in T^\trt{20}}} W_\tau\cdot x_{l,\tau} \leq C_l^\trt{W40} \\
-		\smashoperator[r]{\sum_{\tau \in T^\trt{R}}} x_{l,\tau} \leq C_l^\trt{RS}										& \quad \smashoperator[lr]{\sum_{\tau \in T^\trt{R}\cap T^\trt{20}}} 0.5\cdot x_{l,\tau} + \smashoperator[lr]{\sum_{\tau \in T^\trt{R}\setminus T^\trt{20}}} x_{l,\tau} \leq C_l^\trt{RC}\\ 
-		&\quad \smashoperator[r]{\sum_{\tau \in T^\trt{20}}} x_{l,\tau} + 2\cdot\smashoperator[lr]{\sum_{\tau \in T\setminus T^\trt{20}}} x_{l,\tau} \leq C_l^\trt{TEU}
-\end{array}\right.\\
-S_\texttt{g} &: \left\{ \begin{array}{ll} 
-			x_\tau = \sum_{i\in S} x_{i,\tau} & \forall{\tau \in T}\\		
-			\sum_{i\in S}\sum_{\tau\in T}W^\tau x_{i,\tau} \leq D
-\end{array}\right.
-\end{align*}
+\begin{numcases}{S_\texttt{g}:}
+x_\tau = \sum_{i\in S} x_{i,\tau} & $\forall{\tau \in T}$\label{eq:sumT}\\
+\sum_{i\in S}\sum_{\tau\in T}W^\tau x_{i,\tau} \leq D\label{eq:sumW}
+\end{numcases}
+\begin{numcases}{S_i\text{ for all }i\in S:} 
+		\smashoperator[lr]{\sum_{\tau \in T^\trt{20}}} x_{i,\tau} \leq C_i^\trt{20} 	 
+				& $\smashoperator[lr]{\sum_{\tau \in T^\trt{20}}} W_\tau x_{i,\tau} \leq C_i^\trt{W20}$ \label{eq:cap20}\\
+		\;\smashoperator[lr]{\sum_{\;\tau \in T\setminus T^\trt{20}}} 2 x_{i,\tau} \leq C_i^\trt{40}
+				& $\smashoperator[lr]{\sum_{\tau \in T^\trt{20}}}0.5 W_\tau x_{i,\tau} + \smashoperator[lr]{\sum_{\tau \in T\setminus \in T^\trt{20}}} W_\tau  x_{i,\tau} \leq C_i^\trt{W40}$ \label{eq:cap40}\\ 
+			\smashoperator[r]{\sum_{\tau \in T^\trt{R}}} x_{i,\tau} \leq C_i^\trt{RS}
+				& $\smashoperator[lr]{\sum_{\tau \in T^\trt{R}\cap T^\trt{20}}} 0.5 x_{i,\tau} + \smashoperator[lr]{\sum_{\tau \in T^\trt{R}\setminus T^\trt{20}}} x_{i,\tau} \leq C_i^\trt{RC}$\label{eq:capReefer}\\ 
+				& $\smashoperator[lr]{\sum_{\tau \in T^\trt{20}}} x_{i,\tau} + 2\smashoperator[lr]{\sum_{\tau \in T\setminus T^\trt{20}}} x_{i,\tau} \leq C_i^\trt{TEU}$\label{eq:capTEU}
+\end{numcases}
+
 This is naturally block-angular structured since each $S_i$ constitutes a local system, while the remaining constraints, $S_\texttt{g}$, makes up the global constraints.  
 
 To obtain a less detailed VCM from this VSM, we want to eliminate all variables but $\set{x^\tau}{\tau\in T}$. 
 To exploit the structure of the system, we first define a variable to hold the weight of cargo in each section $i$, $w_i$. We also define the variable $x'_{i,\tau} = x_{i,\tau}$, although this is only a renaming of the variables at first glance. We add the defining constraints to the relevant local system, and redefine the global constraints in terms of the new variables. 
-That is, the $i$'th local subsystem is now $S_i^0 = S_i \cup \{w_i = \sum_{\tau\in T} W^\tau x_{\tau,i}\} \cup \bigcup_{\tau\in T}\{x'_{i,\tau} = x_{i,\tau}\}$, while the new system of global constraints is $S_g^0 = \cup_{\tau\in T}\{x^\tau = \sum_{i\in S} x'_{i,\tau}\} \cup \{w_1 + w_2 + w_3 + w_4 \leq D\}$. 
+That is, the $i$'th local subsystem is now $S_i^0 = S_i \cup \{w_i = \sum_{\tau\in T} W^\tau x_{i,\tau}\} \cup \bigcup_{\tau\in T}\{x'_{i,\tau} = x_{i,\tau}\}$, while the new system of global constraints is $S_g^0 = \cup_{\tau\in T}\{x^\tau = \sum_{i\in S} x'_{i,\tau}\} \cup \{w_1 + w_2 + w_3 + w_4 \leq D\}$. 
 
-Notice, that due to the new auxiliary variables, for a given $i\in S$, none of the variables $x_{i,\tau}$ is used in any constraints outside of $S^0_i$. Therefore, to project $\set{x_{i,\tau}}{\tau\in T}$ from the whole system ($S^0_g\cup_{i'\in S}S^0_{i'}$) we can just eliminate $\set{x_{i,\tau}}{\tau\in T}$ from $S_i^0$ (that is, we keep $\{x_{\tau,i}, w_i\}$), and then add the projection to the other subsystems and the global constraints. And then we can do that for the other subsystems. 
+Notice, that due to the new auxiliary variables, for a given $i\in S$, none of the variables $x_{i,\tau}$ is used in any constraints outside of $S^0_i$. Therefore, to project $\set{x_{i,\tau}}{\tau\in T}$ from the whole system ($S^0_g\cup_{i'\in S}S^0_{i'}$) we can just eliminate $\set{x_{i,\tau}}{\tau\in T}$ from $S_i^0$ (that is, we keep $\{x_{i,\tau}, w_i\}$), and then add the projection to the other subsystems and the global constraints. And then we can do that for the other subsystems. 
 In the end, when all subsystems $S^0_i$ have been projected, we can join these projections together with $S^0_\trt{g}$ and eliminate the remaining variables, $\set{x'_{i,\tau}}{\tau\in T, i\in S}\cup\set{w_i}{i\in S}$ from this.
 \\\\
 \noindent Comparing $\mathfrak{S} \overset{\text{def.}}{=} S_1^0\cup\ldots\cup S_k^0\cup S_\trt{g}^0$ with the original system $S$, all we have done is defining auxiliary variables and substituted them in the system. Thus, eliminating $Y$ from $S$ is equivalent to eliminating $Y \cup Z^0$ from $\mathfrak{S}$. 
