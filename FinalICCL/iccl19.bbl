@@ -1,0 +1,104 @@
+\begin{thebibliography}{10}
+\providecommand{\url}[1]{\texttt{#1}}
+\providecommand{\urlprefix}{URL }
+\providecommand{\doi}[1]{https://doi.org/#1}
+
+\bibitem{mytechrep}
+Ajspur, M.L., Jensen, R.M.: Using {F}ourier-{M}otzkin-elimination to derive
+  capacity models of container vessels. Tech. Rep. TR-2017-197, IT University
+  of Copenhagen (2017)
+
+\bibitem{ambrosino04}
+Ambrosino, D., Sciomachen, A., Tanfani, E.: Stowing a containership: the master
+  bay plan problem. Transportation Research Part A: Policy and Practice
+  \textbf{38}(2),  81 -- 99 (2004)
+
+\bibitem{andersen95}
+Andersen, E.D., Andersen, K.D.: Presolving in linear programming. Mathematical
+  Programming  \textbf{71}(2),  221--245 (1995)
+
+\bibitem{benoy05}
+Benoy, F., King, A., Mesnard, F.: Computing convex hulls with a linear solver.
+  Theory and Practice of Logic Programming  \textbf{5}(1-2),  259--271 (2005)
+
+\bibitem{AlbertosThesis}
+Delgado, A.: Models and Algorithms for Container Vessel Stowage Optimization.
+  Ph.D. thesis, IT University of Copenhagen (2013)
+
+\bibitem{duffin74}
+Duffin, R.J.: On {F}ourier's analysis of linear inequality systems, pp. 71--95.
+  Springer (1974)
+
+\bibitem{fordan98}
+Fordan, A., Yap, R.: Early projection in {CLP(R)}. In: Proceedings of the
+  Fourth International Conference on Principles and Practice of Constraint
+  Programming. vol.~1520, pp. 177--191 (01 1998)
+
+\bibitem{huynh92}
+Huynh, T., Lassez, C., Lassez, J.L.: Practical issues on the projection of
+  polyhedral sets. Annals of mathematics and artificial intelligence
+  \textbf{6}(4),  295--315 (1992)
+
+\bibitem{ICCL18}
+Jensen, R.M., Ajspur, M.L.: The standard capacity model: Towards a polyhedron
+  representation of container vessel capacity. In: Cerulli, R., Raiconi, A.,
+  Voss, S. (eds.) Proceedings of the 9th International Conference on
+  Computational Logistics (ICCL 2018). pp. 175--190. Springer, Cham (2018)
+
+\bibitem{JPAV18}
+Jensen, R.M., Pacino, D., Ajspur, M.L., Vesterdal, C.: Container Vessel Stowage
+  Planning. Weilbach (2018)
+
+\bibitem{jones04}
+Jones, C., Kerrigan, E.C., Maciejowski, J.: Equality set projection: A new
+  algorithm for the projection of polytopes in halfspace representation. Tech.
+  rep., Cambridge University Engineering Dept (2004)
+
+\bibitem{JLFP93}
+Jones, K., Lustig, I., Farwolden, J., Powell, W.: Multicommodity network flows:
+  The impact of formulation on decomposition. Mathematical Programming
+  \textbf{62},  95--117 (1993)
+
+\bibitem{kimkang02}
+Kang, J.G., Kim, Y.D.: Stowage planning in maritime container transportation.
+  Journal of the Operational Research Society  \textbf{53}(4),  415--426 (2002)
+
+\bibitem{lassez90}
+Lassez, J.L.: Querying constraints. In: Proceedings of the ninth ACM
+  SIGACT-SIGMOD-SIGART symposium on Principles of database systems (PODS). pp.
+  288--298. ACM (1990)
+
+\bibitem{lukatskii08}
+Lukatskii, A.M., Shapot, D.V.: A constructive algorithm for folding large-scale
+  systems of linear inequalities. Computational Mathematics and Mathematical
+  Physics  \textbf{48}(7),  1100--1112 (2008)
+
+\bibitem{pacino11}
+Pacino, D., Delgado, A., Jensen, R., Bebbington, T.: Fast generation of
+  near-optimal plans for eco-efficient stowage of large container vessels. In:
+  Proceedings of the 2nd International Conference on Computational Logistics
+  (ICCL'11). pp. 286--301. Springer (2011)
+
+\bibitem{shapot12}
+Shapot, D.V., Lukatskii, A.M.: Solution building for arbitrary system of linear
+  inequalities in an explicit form. American Journal of Computational
+  Mathematics  \textbf{2}(01), ~1 (2012)
+
+\bibitem{simon05}
+Simon, A., King, A.: Exploiting sparsity in polyhedral analysis. In: Hankin,
+  C., Siveroni, I. (eds.) Proceedings of the 12th International Symposium in
+  Static Analysis (SAS), pp. 336--351. Springer Berlin Heidelberg (2005)
+
+\bibitem{williams}
+Williams, H.P.: Model Building in Mathematical Programming. Wiley (2007)
+
+\bibitem{roach00}
+Wilson, I.D., Roach, P.A.: Container stowage planning: a methodology for
+  generating computerised solutions. Journal of the Operational Research
+  Society  \textbf{51}(11),  1248--1255 (2000)
+
+\bibitem{ziegler95}
+Ziegler, G.M.: Lectures on polytopes, Graduate texts in mathematics, vol.~152.
+  Springer, New York (1995)
+
+\end{thebibliography}
